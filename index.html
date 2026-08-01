@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NHS Conflict Management - Ask the Expert</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        nhs: {
+                            blue: '#005A9C',
+                            darkblue: '#003087',
+                            brightblue: '#0072CE',
+                            lightbg: '#F0F4F8',
+                            warmgrey: '#E8EDF2',
+                            red: '#D81E05',
+                            green: '#007F3B'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 0.4; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        @keyframes wave-bar {
+            0%, 100% { height: 8px; }
+            50% { height: 32px; }
+        }
+        .animate-pulse-ring {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .wave-bar {
+            animation: wave-bar 1.2s ease-in-out infinite;
+        }
+        .wave-bar:nth-child(1) { animation-delay: 0.0s; }
+        .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.6s; }
+
+        /* Custom scrollbar for modern look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-nhs-lightbg min-h-screen font-sans text-slate-800 flex flex-col justify-between p-2 md:p-6">
+
+    <!-- Main Outer Container -->
+    <div class="max-w-5xl mx-auto w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 flex flex-col min-h-[720px]">
+        
+        <!-- NHS Header Banner -->
+        <header class="bg-nhs-blue text-white px-5 py-3.5 md:px-6 md:py-4 flex items-center justify-between shadow-md">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white text-nhs-blue font-bold text-xl px-3 py-1 rounded tracking-wider shadow-sm">
+                    NHS
+                </div>
+                <div>
+                    <h1 class="text-base md:text-xl font-bold leading-tight">General Practice Conflict Management</h1>
+                    <p class="text-[11px] md:text-xs text-blue-100 flex items-center gap-1.5 mt-0.5">
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        AI Voice Expert Assistant (British Accent) • Grounded in Lindsay Dubock TTN Notebook
+                    </p>
+                </div>
+            </div>
+            <button id="infoBtn" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-all text-xs md:text-sm font-medium flex items-center gap-2" title="View Full Lesson Knowledge Base">
+                <i class="fa-solid fa-book-bookmark text-sm"></i>
+                <span class="hidden sm:inline">Notebook Context</span>
+            </button>
+        </header>
+
+        <!-- Main Workspace Grid -->
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0">
+            
+            <!-- Left Sidebar / Persona Controls -->
+            <div class="lg:col-span-4 bg-slate-50 p-4 md:p-5 border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col justify-between space-y-4">
+                <div>
+                    <div class="flex items-center space-x-2 text-nhs-darkblue font-semibold text-xs md:text-sm mb-3">
+                        <i class="fa-solid fa-user-doctor text-nhs-blue"></i>
+                        <span>Select AI Voice Trainer Persona</span>
+                    </div>
+
+                    <!-- Voice Persona Selector Cards -->
+                    <div class="space-y-2.5" id="personaContainer">
+                        <div data-persona="lindsay" class="persona-card active bg-white p-3 rounded-xl border-2 border-nhs-brightblue shadow-sm cursor-pointer hover:border-nhs-brightblue transition-all flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 text-nhs-blue flex items-center justify-center font-bold text-sm shrink-0">
+                                LD
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-slate-900 text-xs md:text-sm truncate">Lindsay Dubock</h4>
+                                <p class="text-[11px] text-slate-500 truncate">Director, The Training Network</p>
+                                <span class="inline-block text-[10px] bg-blue-50 text-nhs-blue font-medium px-2 py-0.5 rounded mt-0.5">
+                                    <i class="fa-solid fa-language mr-1"></i>Voice: Kore (British, Direct & Empathetic)
+                                </span>
+                            </div>
+                        </div>
+
+                        <div data-persona="sarah" class="persona-card bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-nhs-brightblue transition-all flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0">
+                                SM
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-slate-900 text-xs md:text-sm truncate">Dr. Sarah Mitchell</h4>
+                                <p class="text-[11px] text-slate-500 truncate">Senior De-escalation Lead</p>
+                                <span class="inline-block text-[10px] bg-emerald-50 text-emerald-700 font-medium px-2 py-0.5 rounded mt-0.5">
+                                    <i class="fa-solid fa-language mr-1"></i>Voice: Aoede (British, Calm & Reassuring)
+                                </span>
+                            </div>
+                        </div>
+
+                        <div data-persona="mark" class="persona-card bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-nhs-brightblue transition-all flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm shrink-0">
+                                MD
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-slate-900 text-xs md:text-sm truncate">Mark Davies</h4>
+                                <p class="text-[11px] text-slate-500 truncate">Practice Manager & Lead</p>
+                                <span class="inline-block text-[10px] bg-amber-50 text-amber-800 font-medium px-2 py-0.5 rounded mt-0.5">
+                                    <i class="fa-solid fa-language mr-1"></i>Voice: Puck (British, Practical & Structured)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommended Quick Prompt Topics -->
+                    <div class="mt-5">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Practice Scenarios (Click to Ask)</p>
+                        <div class="space-y-2 text-xs">
+                            <button class="quick-question-btn w-full text-left bg-white hover:bg-slate-100 p-2.5 rounded-lg border border-slate-200 text-slate-700 transition-all flex items-start gap-2 shadow-xs">
+                                <i class="fa-solid fa-magnifying-glass text-nhs-blue mt-0.5 shrink-0"></i>
+                                <span>How do I move from being a 'Judge' to a 'Detective' using Miller's Law?</span>
+                            </button>
+                            <button class="quick-question-btn w-full text-left bg-white hover:bg-slate-100 p-2.5 rounded-lg border border-slate-200 text-slate-700 transition-all flex items-start gap-2 shadow-xs">
+                                <i class="fa-solid fa-stairs text-nhs-blue mt-0.5 shrink-0"></i>
+                                <span>What is the 3-part Boundary Formula and 5 Rung Ladder?</span>
+                            </button>
+                            <button class="quick-question-btn w-full text-left bg-white hover:bg-slate-100 p-2.5 rounded-lg border border-slate-200 text-slate-700 transition-all flex items-start gap-2 shadow-xs">
+                                <i class="fa-solid fa-shield-halved text-nhs-blue mt-0.5 shrink-0"></i>
+                                <span>What does 'Not Taking the Bait' mean when a patient attacks staff?</span>
+                            </button>
+                            <button class="quick-question-btn w-full text-left bg-white hover:bg-slate-100 p-2.5 rounded-lg border border-slate-200 text-slate-700 transition-all flex items-start gap-2 shadow-xs">
+                                <i class="fa-solid fa-users text-nhs-blue mt-0.5 shrink-0"></i>
+                                <span>How do I handle staff-splitting or third-party callers?</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Knowledge Base Indicator -->
+                <div class="bg-blue-50/90 p-3 rounded-xl border border-blue-100 text-xs text-slate-600">
+                    <div class="flex items-center gap-2 font-semibold text-nhs-blue mb-1">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>100% Grounded Knowledge</span>
+                    </div>
+                    Answers are strictly based on the 54-slide General Practice Conflict Management Notebook by Lindsay Dubock.
+                </div>
+            </div>
+
+            <!-- Right Area / Dialogue Stream & Microphone Interaction -->
+            <div class="lg:col-span-8 flex flex-col justify-between p-4 md:p-6 bg-white">
+                
+                <!-- Chat & Speech History View -->
+                <div id="chatHistory" class="flex-1 overflow-y-auto space-y-4 pr-1 md:pr-2 mb-4 max-h-[440px] min-h-[320px]">
+                    <!-- Initial Welcome Message from AI Expert -->
+                    <div class="flex gap-3">
+                        <div id="aiAvatarHeader" class="w-8 h-8 rounded-full bg-nhs-blue text-white flex items-center justify-center shrink-0 text-xs font-bold">
+                            LD
+                        </div>
+                        <div class="bg-slate-100 p-3.5 md:p-4 rounded-2xl rounded-tl-none text-xs md:text-sm text-slate-800 max-w-[90%] leading-relaxed shadow-xs">
+                            <p id="aiHeaderName" class="font-bold text-nhs-blue text-xs mb-1">Lindsay Dubock • Lead Conflict Trainer</p>
+                            Welcome! I am your British AI Expert for <strong>Conflict Management in General Practice</strong>. 
+                            <br/><br/>
+                            Ask me anything about Miller's Law (Judge vs. Detective), MDE Behaviours (Manipulation, Demanding, Entitlement), the 5-Rung Boundaries Ladder, the 4-Part Contact Structure, or Micro-Resilience.
+                            <br/><br/>
+                            <span class="text-nhs-darkblue font-medium"><i class="fa-solid fa-microphone text-nhs-brightblue mr-1"></i> Tap the microphone button below to speak your question</span>, or type it in the text box.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Voice Interaction Area -->
+                <div class="border-t border-slate-100 pt-4 flex flex-col items-center">
+                    
+                    <!-- Audio Wave Visualizer (Active during recording or AI playback) -->
+                    <div id="audioVisualizer" class="hidden flex items-center justify-center gap-1.5 h-10 mb-2">
+                        <span class="w-1.5 bg-nhs-brightblue rounded-full wave-bar"></span>
+                        <span class="w-1.5 bg-nhs-brightblue rounded-full wave-bar"></span>
+                        <span class="w-1.5 bg-nhs-brightblue rounded-full wave-bar"></span>
+                        <span class="w-1.5 bg-nhs-brightblue rounded-full wave-bar"></span>
+                        <span class="w-1.5 bg-nhs-brightblue rounded-full wave-bar"></span>
+                        <span id="visualizerStatus" class="ml-3 text-xs font-medium text-nhs-blue">Listening to your voice...</span>
+                    </div>
+
+                    <!-- Microphone & Input Controls Bar -->
+                    <div class="w-full flex items-center gap-2">
+                        <!-- Microphone Main Action Button -->
+                        <div class="relative flex-shrink-0">
+                            <div id="micPulseRing" class="hidden absolute -inset-2 bg-nhs-brightblue/30 rounded-full animate-pulse-ring"></div>
+                            <button id="micBtn" class="relative bg-nhs-blue hover:bg-nhs-darkblue text-white w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg transition-all focus:outline-none focus:ring-4 focus:ring-blue-200" title="Click to Speak">
+                                <i id="micIcon" class="fa-solid fa-microphone text-lg md:text-xl"></i>
+                            </button>
+                        </div>
+
+                        <!-- Text Fallback Input Container -->
+                        <div class="flex-1 flex items-center bg-slate-100 rounded-full px-4 py-2 border border-slate-200 focus-within:border-nhs-brightblue focus-within:bg-white transition-all">
+                            <input id="textInput" type="text" placeholder="Or type your question here..." class="w-full bg-transparent border-none text-xs md:text-sm focus:outline-none text-slate-800 placeholder-slate-400">
+                            <button id="sendBtn" class="text-nhs-blue hover:text-nhs-darkblue p-2 font-medium text-sm transition-all" title="Send Message">
+                                <i class="fa-solid fa-paper-plane text-sm md:text-base"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Voice Mode Toggle & Status -->
+                    <div class="w-full flex justify-between items-center mt-3 text-[11px] text-slate-500 px-2">
+                        <span id="statusIndicator" class="flex items-center gap-1.5 font-medium">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Ready to listen (en-GB)
+                        </span>
+                        <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                            <input type="checkbox" id="autoPlaySpeech" checked class="rounded text-nhs-blue focus:ring-nhs-blue h-3.5 w-3.5">
+                            <span>Auto-speak British AI voice response</span>
+                        </label>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Comprehensive Notebook Knowledge Base Modal -->
+        <div id="kbModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
+                <div class="bg-nhs-blue text-white p-4 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-base flex items-center gap-2">
+                            <i class="fa-solid fa-book-open"></i> Full Lesson Knowledge Base Context
+                        </h3>
+                        <p class="text-xs text-blue-100">Lindsay Dubock • Conflict Management in General Practice (The Training Network)</p>
+                    </div>
+                    <button id="closeKbBtn" class="text-white hover:bg-white/20 p-1.5 rounded-lg transition-all">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                <div class="p-5 overflow-y-auto space-y-4 text-xs md:text-sm text-slate-700 leading-relaxed">
+                    
+                    <div class="border-b pb-3">
+                        <h4 class="font-bold text-nhs-darkblue text-sm">90% of Conflict is Predictable</h4>
+                        <p class="text-slate-600 mt-1">If conflict follows recognizable patterns, it can be prepared for. Training shifts staff from feeling like victims of conflict to skilled managers of it.</p>
+                    </div>
+
+                    <div class="border-b pb-3">
+                        <h4 class="font-bold text-nhs-darkblue text-sm">Module 1: Hidden Drivers & Locus of Control</h4>
+                        <ul class="list-disc pl-5 mt-1 space-y-1">
+                            <li><strong>In My Control (Accountable):</strong> My boundaries, thoughts, actions, responses, self-talk. (Stick like Velcro).</li>
+                            <li><strong>Out of My Control (Let Go):</strong> Others' choices, opinions, patient's anger, past/future. (Run off like Teflon — Monk carrying woman story).</li>
+                            <li><strong>Hidden Drivers:</strong> Aggression is overwhelmingly driven by <strong>Fear</strong> (illness, being dismissed, losing control, system delays), <strong>Shame/Embarrassment</strong> (literacy, addiction, social status), <strong>Past Trauma</strong>, and <strong>Social Factors</strong>.</li>
+                        </ul>
+                    </div>
+
+                    <div class="border-b pb-3">
+                        <h4 class="font-bold text-nhs-darkblue text-sm">Module 2: De-escalation, Fight-or-Flight & Miller's Law</h4>
+                        <ul class="list-disc pl-5 mt-1 space-y-1">
+                            <li><strong>Fight-or-Flight Neuroscience:</strong> Dysregulated nervous systems mirror each other. Healthcare staff must regulate first (calm, low, slow voice).</li>
+                            <li><strong>3 Layers of Communication:</strong> 55% Body Language (45-degree stance, palms open, 2 arms' length), 38% Paraverbal (pitch, tone, pace), 7% Words.</li>
+                            <li><strong>Miller's Law (Judge vs. Detective):</strong> <em>"To understand what someone is saying, assume it is true and try to imagine what it could be true of."</em>
+                                <ul class="list-circle pl-4 mt-0.5 text-slate-600">
+                                    <li><strong>The Judge:</strong> Searches for inaccuracies ("Sir, it's only been 12 minutes!"). Escalates.</li>
+                                    <li><strong>The Detective:</strong> Searches for underlying distress ("If it feels like an hour, they feel forgotten... You are a priority to us, let me check where the GP is"). De-escalates.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="border-b pb-3">
+                        <h4 class="font-bold text-nhs-darkblue text-sm">Module 3: MDE Behaviours (Manipulation, Demanding, Entitlement)</h4>
+                        <ul class="list-disc pl-5 mt-1 space-y-1">
+                            <li><strong>Core Driver:</strong> Re-asserting control when feeling vulnerable or powerless.</li>
+                            <li><strong>Manipulation:</strong> Indirect control (flattery, guilt, splitting staff, feigning vulnerability). <em>Response: Stay warm but consistent. "Our team follows the same policy for every patient."</em></li>
+                            <li><strong>Demanding:</strong> Direct control (urgency, insistence). <em>Response: Acknowledge emotion, offer 2 clear choices within policy.</em></li>
+                            <li><strong>Entitlement:</strong> Assumed control (superiority statements, name-dropping, exemption requests). <em>Response: Frame fairness as the reason ("Our process is the same for every patient so everyone gets a fair standard of care").</em></li>
+                            <li><strong>Mantra:</strong> <em>Calm dismantles manipulation. Consistency disarms entitlement. Fairness protects both patient and practice.</em></li>
+                        </ul>
+                    </div>
+
+                    <div class="border-b pb-3">
+                        <h4 class="font-bold text-nhs-darkblue text-sm">Module 4: The Boundaries Ladder</h4>
+                        <ul class="list-disc pl-5 mt-1 space-y-1">
+                            <li><strong>Boundary Definition:</strong> A condition ("I will continue to help you if..."), not a threat or refusal.</li>
+                            <li><strong>Boundary Formula:</strong> <code>1 Clear Limit + 1 Rationale + 1 Option</code><br/>
+                            <em>Example: "I am not able to offer a same-day slot today (limit) because those are reserved for acute emergencies (rationale). What I can offer is a callback from the duty pharmacist or routine slot tomorrow (option)."</em></li>
+                            <li><strong>5 Rungs:</strong> Rung 1 Clarify -> Rung 2 Contain -> Rung 3 Reaffirm -> Rung 4 Consequence ("If shouting continues, I will end this call") -> Rung 5 Conclude/Escalate. Start low, climb slowly, step back down when calm. Never re-argue a stated boundary.</li>
+                        </ul>
+                    </div>
+
+                    <div class="border-b pb-3">
+                        <h4 class="font-bold text-nhs-darkblue text-sm">Module 5: Managing Contacts Under Pressure</h4>
+                        <ul class="list-disc pl-5 mt-1 space-y-1">
+                            <li><strong>4-Part Contact Structure:</strong> Open (role + purpose) -> Gather (1 focused question) -> Check (confirm key facts) -> Close (explicit plan by who/when + check understanding).</li>
+                            <li><strong>Pace Control & Skilled Redirect:</strong> Validate, name what you heard, move forward. ("Can I just pause you there — what is worrying you most right now?")</li>
+                            <li><strong>Not Taking the Bait:</strong> Respond to the presupposition/need, not the attack/accusation. (Child metaphor: reward the good, don't feed the bad).</li>
+                            <li><strong>Third-Party Callers:</strong> Keep patient at the center. Validate concern without breaching confidentiality or granting unvetted demands.</li>
+                            <li><strong>Clean Close:</strong> Confirm understanding aloud, state specific names/times (never "someone will be in touch"), safety net.</li>
+                            <li><strong>Defensible Documentation:</strong> Record objective facts, exact statements, and boundaries set — avoid emotional labels ("patient was rude").</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-nhs-darkblue text-sm">Module 6: Resilience & Resetting</h4>
+                        <ul class="list-disc pl-5 mt-1 space-y-1">
+                            <li><strong>Resilience Definition:</strong> The ability to reset — not to endure abuse or cope alone.</li>
+                            <li><strong>Micro-Resilience Tools:</strong> Box Breathing (4-4-4-4 rhythm), Sensory Grounding, Silent Self-Talk ("This frustration is not about me. I am here to help, not to absorb their feelings").</li>
+                            <li><strong>Negativity Bias:</strong> Counteract by sharing positive feedback, debriefing objectively, and shifting language to "that was challenging, but we handled it."</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Onboarding / Setup Screen -->
+        <div id="onboardingModal" class="fixed inset-0 z-[100] bg-slate-900/90 flex items-center justify-center p-4 transition-opacity duration-500">
+            <div class="max-w-3xl w-full bg-[#263040] rounded-xl shadow-2xl p-8 md:p-10 flex flex-col items-center border border-[#3e4c5e]">
+                <h2 class="text-2xl md:text-3xl font-bold text-[#60a5fa] mb-3 text-center">Before We Begin: Audio Setup</h2>
+                <p class="text-slate-300 mb-8 text-center max-w-xl">This interactive simulation requires your Gemini API key and microphone access so you can speak directly to the AI Expert.</p>
+                
+                <div class="w-full bg-[#313d50] border border-[#3e4c5e] rounded-lg p-6 md:p-8 text-left mb-8 shadow-inner">
+                    <!-- API Key Section -->
+                    <div class="mb-6 pb-6 border-b border-[#475569]">
+                        <label class="block text-sm font-bold text-white mb-2">Enter your Gemini API Key:</label>
+                        <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full bg-[#1e2532] border border-[#475569] rounded-md px-4 py-3 text-slate-200 focus:outline-none focus:border-[#60a5fa] transition-colors">
+                        <p class="text-[12px] text-slate-400 mt-2"><i class="fa-solid fa-lock mr-1"></i> Your key is saved locally in your browser and never sent to our servers.</p>
+                    </div>
+
+                    <!-- Microphone Steps Section -->
+                    <div class="space-y-4 text-slate-200 text-sm md:text-base leading-relaxed">
+                        <p><strong class="text-white font-semibold">Step 1:</strong> Click the button below.</p>
+                        <p><strong class="text-white font-semibold">Step 2:</strong> Your browser will display a popup near the top of the screen.</p>
+                        <p><strong class="text-white font-semibold">Step 3:</strong> Click "Allow" to grant microphone access.</p>
+                    </div>
+                </div>
+
+                <button id="startAppBtn" class="bg-[#3b82f6] hover:bg-[#2563eb] text-white font-medium py-2.5 px-8 rounded-md transition-colors text-base shadow-md flex items-center justify-center">
+                    Test Microphone & Continue
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Full Grounded NHS Conflict Management Knowledge Base (Lindsay Dubock / TTN Notebook)
+        const NHS_LESSON_KNOWLEDGE_BASE = `
+        You are an official NHS Practice Conflict Management AI Master Trainer providing real-time expert advice to NHS GP practice staff (receptionists, care coordinators, practice managers, nurses, doctors).
+        Your knowledge is 100% grounded in the "Conflict Management in General Practice" training deck and commentary presented by Lindsay Dubock, Director of The Training Network (TTN).
+
+        CORE PHILOSOPHY & FOUNDATIONAL PRINCIPLES:
+        - 90% of conflict is predictable. If predictable, it can be prepared for.
+        - Empathy-First & Psychologically Informed: Understand WHY patients behave as they do to buy "empathy time" before setting boundaries.
+        - What I Can Control vs Cannot Control (Locus of Control): Staff must be 100% accountable for what is in their control (boundaries, responses, self-talk — stick like Velcro). What is out of control (patient emotions, choices, past) must run off like Teflon (refer to the Monk story: set the burden down, don't carry it for hours).
+
+        MODULE 1: HIDDEN DRIVERS OF POOR BEHAVIOUR
+        - Aggression is overwhelmingly FEAR-BASED: fear of diagnosis/death, fear of being dismissed/forgotten in the system, fear of losing control, fear of the system.
+        - Shame & Embarrassment: Hidden shame around literacy, addiction, social status, or rejection causes patients to attack before feeling exposed.
+        - Past Trauma & Lack of Trust: Negative encounters with authority cause hypervigilance, volatility, or intolerance to delays.
+        - Social Factors & Unmet Needs: Poverty, homelessness, PTSD, cognitive impairment, or delirium lower threat thresholds.
+
+        MODULE 2: DE-ESCALATION & NEUROSCIENCE (MILLER'S LAW)
+        - Fight-or-Flight Response: The autonomic system takes over; rational brain goes offline. Dysregulated nervous systems are contagious. Staff MUST regulate first (steady, low, calm voice signals biological safety).
+        - 3 Layers of Communication: 55% Body Language (open posture, 45-degree angle, 2 arms' length distance), 38% Paraverbal (pitch, pace, tone), 7% Words.
+        - Miller's Law (Judge vs. Detective Metaphor):
+          "To understand what someone is saying, assume it is true and try to imagine what it could be true of." (George Miller, 1980).
+          * The Judge listens to find the mistake, win the argument, bring a guilty verdict. (e.g., Patient: "I've been waiting an hour!" -> Judge: "Sir, it's only been 12 minutes!"). Escalates conflict.
+          * The Detective listens to find what's really going on beneath distress. (e.g., Detective: "You are a priority to us, and I know when you wait it doesn't feel that way. Let me check where the GP is..."). De-escalates conflict.
+
+        MODULE 3: MDE BEHAVIOURS (MANIPULATION, DEMANDING, ENTITLEMENT)
+        - Core Driver: Regaining control when feeling powerless, anxious, or vulnerable.
+        - Manipulation Tactics: Flattery/guilt, staff splitting ("Dr. Khan said..."), threats ("I'll report to CQC"), feigning vulnerability.
+          Response: Warm but consistent. "Our team follows the same policy for every patient."
+        - Demanding Tactics: Forceful insistence, urgency, impatience.
+          Response: Acknowledge emotion (not demand), offer 2 genuine choices within policy.
+        - Entitlement Tactics: Superiority statements ("I pay my taxes"), name-dropping, exemption requests ("I don't do online forms"), blame/deflection.
+          Response: Frame FAIRNESS as the reason. "Our process is the same for every patient so everyone receives a fair standard of care."
+        - MDE Mantra: "Calm dismantles manipulation. Consistency disarms entitlement. Fairness protects both patient and practice."
+
+        MODULE 4: THE BOUNDARIES LADDER
+        - Reframe: A boundary is NOT a wall or threat. It is a condition: "I will continue to help you, on condition that..."
+        - Boundary Formula (That does not invite argument): 1 Clear Limit + 1 Rationale + 1 Option.
+          Sequence matters: Limit first, Rationale second, Option third. (e.g., "I'm not able to offer a same-day slot today [limit] because acute capacity is reserved for medical emergencies [rationale]. What I can offer is a callback from the duty pharmacist [option].")
+        - The 5 Rungs of the Ladder: Rung 1 Clarify -> Rung 2 Contain -> Rung 3 Reaffirm -> Rung 4 Consequence ("If the shouting continues, I will end this call") -> Rung 5 Conclude/Escalate. Start low, climb slowly, step back down when patient calms. NEVER re-argue a stated boundary.
+
+        MODULE 5: MANAGING CONTACTS UNDER PRESSURE
+        - 4-Part Contact Structure: Open (role + purpose + time) -> Gather (1 focused question) -> Check (confirm details) -> Close (explicit plan + check understanding).
+        - Pace Control & Skilled Redirect: Validate, name what you heard, move forward. ("Can I just pause you there — what is worrying you most right now?")
+        - Not Taking the Bait: Respond to the presupposition (the underlying need), NOT the bait/attack. (Child metaphor: ignore unhelpful behavior, address the need beneath).
+        - Third-Party Callers: Keep patient at center ("I need to speak with the patient directly"). Validate without breaching confidentiality.
+        - Clean Close: Confirm understanding aloud, explicit plan (specific name, action, time — NEVER "someone will be in touch"), safety net.
+        - Defensible & Neutral Documentation: Record factual statements, exact words, and boundaries set — avoid emotional labels ("patient was aggressive").
+
+        MODULE 6: RESILIENCE & WELLBEING
+        - Resilience = The ability to RESET, not the ability to endure abuse or cope alone.
+        - Micro-Resilience Tools: Box Breathing (4-4-4-4 rhythm), Sensory Grounding, Silent Self-Talk Reset ("This frustration is not about me. I am here to help, not to absorb their feelings").
+        - Counteract Negativity Bias: Share compliments, debrief objectively, shift language from "that was a nightmare" to "that was challenging, but we handled it."
+
+        RESPONSE FORMAT GUIDELINES:
+        - Keep responses concise (3-4 clear, direct sentences) so they sound natural and authoritative when converted into spoken AI audio.
+        - Use British English spelling and terminology suitable for an NHS practice context.
+        - Use practical scripts from the notebook ("Do say" / "Don't say" examples).
+        - Maintain an empathetic, composed, and highly professional NHS expert tone.
+        `;
+
+        // Active State
+        let activePersona = {
+            id: 'lindsay',
+            name: 'Lindsay Dubock',
+            title: 'Lead Conflict Trainer',
+            voiceName: 'Kore'
+        };
+        let isRecording = false;
+        let speechRecognition = null;
+
+        // API Key handled dynamically via UI
+        let API_KEY = ""; 
+
+        // DOM Element Selectors
+        const micBtn = document.getElementById('micBtn');
+        const micIcon = document.getElementById('micIcon');
+        const micPulseRing = document.getElementById('micPulseRing');
+        const textInput = document.getElementById('textInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatHistory = document.getElementById('chatHistory');
+        const audioVisualizer = document.getElementById('audioVisualizer');
+        const visualizerStatus = document.getElementById('visualizerStatus');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const autoPlaySpeech = document.getElementById('autoPlaySpeech');
+        const kbModal = document.getElementById('kbModal');
+        const infoBtn = document.getElementById('infoBtn');
+        const closeKbBtn = document.getElementById('closeKbBtn');
+        const aiAvatarHeader = document.getElementById('aiAvatarHeader');
+        const aiHeaderName = document.getElementById('aiHeaderName');
+
+        // Onboarding Element Selectors
+        const onboardingModal = document.getElementById('onboardingModal');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const startAppBtn = document.getElementById('startAppBtn');
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                speechRecognition = new SpeechRecognition();
+                speechRecognition.continuous = false;
+                speechRecognition.interimResults = true;
+                speechRecognition.lang = 'en-GB';
+
+                speechRecognition.onstart = () => {
+                    isRecording = true;
+                    updateMicUI(true);
+                    visualizerStatus.innerText = "Listening to your voice (en-GB)...";
+                };
+
+                speechRecognition.onresult = (event) => {
+                    let transcript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        transcript += event.results[i][0].transcript;
+                    }
+                    textInput.value = transcript;
+                };
+
+                speechRecognition.onerror = (event) => {
+                    console.warn("Speech recognition error:", event.error);
+                    stopRecording();
+                    statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> Speech input issue: ${event.error}`;
+                };
+
+                speechRecognition.onend = () => {
+                    stopRecording();
+                    if (textInput.value.trim().length > 0) {
+                        handleUserSubmit(textInput.value.trim());
+                    }
+                };
+            } else {
+                console.warn("Web Speech API not supported in this browser embed. Text input is ready.");
+            }
+        }
+
+        function toggleRecording() {
+            if (isRecording) {
+                if (speechRecognition) speechRecognition.stop();
+                stopRecording();
+            } else {
+                textInput.value = '';
+                if (speechRecognition) {
+                    try {
+                        speechRecognition.start();
+                    } catch (e) {
+                        console.error(e);
+                        stopRecording();
+                    }
+                } else {
+                    alert("Speech recognition is not natively supported in this browser embed. Please type your query in the text box.");
+                }
+            }
+        }
+
+        function stopRecording() {
+            isRecording = false;
+            updateMicUI(false);
+        }
+
+        function updateMicUI(recording) {
+            if (recording) {
+                micBtn.classList.remove('bg-nhs-blue', 'hover:bg-nhs-darkblue');
+                micBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                micIcon.classList.remove('fa-microphone');
+                micIcon.classList.add('fa-square');
+                micPulseRing.classList.remove('hidden');
+                audioVisualizer.classList.remove('hidden');
+                statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Listening to speech (en-GB)...`;
+            } else {
+                micBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                micBtn.classList.add('bg-nhs-blue', 'hover:bg-nhs-darkblue');
+                micIcon.classList.remove('fa-square');
+                micIcon.classList.add('fa-microphone');
+                micPulseRing.classList.add('hidden');
+                audioVisualizer.classList.add('hidden');
+                statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Ready to listen (en-GB)`;
+            }
+        }
+
+        document.querySelectorAll('.persona-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.persona-card').forEach(c => {
+                    c.classList.remove('active', 'border-2', 'border-nhs-brightblue');
+                    c.classList.add('border', 'border-slate-200');
+                });
+                card.classList.add('active', 'border-2', 'border-nhs-brightblue');
+                
+                const personaKey = card.getAttribute('data-persona');
+                if (personaKey === 'lindsay') {
+                    activePersona = { id: 'lindsay', name: 'Lindsay Dubock', title: 'Lead Conflict Trainer', voiceName: 'Kore' };
+                    aiAvatarHeader.innerText = 'LD';
+                } else if (personaKey === 'sarah') {
+                    activePersona = { id: 'sarah', name: 'Dr. Sarah Mitchell', title: 'Senior De-escalation Lead', voiceName: 'Aoede' };
+                    aiAvatarHeader.innerText = 'SM';
+                } else {
+                    activePersona = { id: 'mark', name: 'Mark Davies', title: 'Practice Manager & Lead', voiceName: 'Puck' };
+                    aiAvatarHeader.innerText = 'MD';
+                }
+                aiHeaderName.innerText = `${activePersona.name} • ${activePersona.title}`;
+            });
+        });
+
+        document.querySelectorAll('.quick-question-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const questionText = btn.querySelector('span').innerText;
+                textInput.value = questionText;
+                handleUserSubmit(questionText);
+            });
+        });
+
+        // Exponential backoff fetch helper
+        async function fetchWithRetry(url, options, maxRetries = 4) {
+            let delay = 1000;
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) return response;
+                    if (response.status === 429 || response.status >= 500) {
+                        await new Promise(r => setTimeout(r, delay));
+                        delay *= 2;
+                        continue;
+                    }
+                    return response;
+                } catch (err) {
+                    if (i === maxRetries - 1) throw err;
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
+                }
+            }
+            throw new Error("API call failed after retries.");
+        }
+
+        async function handleUserSubmit(userQuestion) {
+            if (!userQuestion || userQuestion.trim() === '') return;
+
+            // Render User Chat Bubble
+            appendChatMessage('user', userQuestion);
+            textInput.value = '';
+
+            // Show Typing Indicator
+            const loadingBubbleId = appendTypingIndicator();
+
+            try {
+                // Construct Gemini Prompt with Grounded Knowledge Base System Instructions
+                const promptPayload = {
+                    contents: [
+                        {
+                            role: "user",
+                            parts: [{ text: userQuestion }]
+                        }
+                    ],
+                    systemInstruction: {
+                        parts: [{ text: NHS_LESSON_KNOWLEDGE_BASE + `\nCurrently responding as persona: ${activePersona.name} (${activePersona.title}). Use British English phrasing and keep answer under 4 sentences.` }]
+                    }
+                };
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
+                
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(promptPayload)
+                });
+
+                const data = await response.json();
+                removeChatMessage(loadingBubbleId);
+
+                const aiReplyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I could not retrieve an answer from the NHS training database.";
+
+                // Append AI Response
+                appendChatMessage('ai', aiReplyText);
+
+                // Auto-Generate Spoken Voice Response
+                if (autoPlaySpeech.checked) {
+                    generateAndPlayVoiceResponse(aiReplyText);
+                }
+
+            } catch (error) {
+                console.error("Gemini API error:", error);
+                removeChatMessage(loadingBubbleId);
+                appendChatMessage('ai', "I encountered a connection issue accessing the Conflict Management database. Please check your network and try again.");
+            }
+        }
+
+        async function generateAndPlayVoiceResponse(textToSpeak) {
+            visualizerStatus.innerText = `${activePersona.name} speaking (British accent)...`;
+            audioVisualizer.classList.remove('hidden');
+
+            try {
+                // Explicitly prompt Gemini TTS for a clear, natural British accent
+                const ttsPayload = {
+                    contents: [{
+                        parts: [{ text: `Say in a natural, clear British accent (UK Received Pronunciation) with an empathetic, professional tone: ${textToSpeak}` }]
+                    }],
+                    generationConfig: {
+                        responseModalities: ["AUDIO"],
+                        speechConfig: {
+                            voiceConfig: {
+                                prebuiltVoiceConfig: { voiceName: activePersona.voiceName }
+                            }
+                        }
+                    },
+                    model: "gemini-2.5-flash-preview-tts"
+                };
+
+                const ttsUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
+                
+                const response = await fetchWithRetry(ttsUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ttsPayload)
+                });
+
+                const result = await response.json();
+                const part = result?.candidates?.[0]?.content?.parts?.[0];
+                const base64Audio = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType || "audio/L16;rate=24000";
+
+                if (base64Audio) {
+                    // Extract Sample Rate from MimeType
+                    const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                    const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 24000;
+
+                    // Convert Base64 PCM16 to Playable WAV Blob
+                    const pcm16Array = base64ToPCM16(base64Audio);
+                    const wavBlob = pcmToWav(pcm16Array, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+
+                    const audioPlayer = new Audio(audioUrl);
+                    audioPlayer.onended = () => {
+                        audioVisualizer.classList.add('hidden');
+                    };
+                    audioPlayer.play();
+                } else {
+                    fallbackWebSpeech(textToSpeak);
+                }
+
+            } catch (err) {
+                console.warn("Gemini TTS failed, using browser speech synthesis fallback:", err);
+                fallbackWebSpeech(textToSpeak);
+            }
+        }
+
+        function base64ToPCM16(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return new Int16Array(bytes.buffer);
+        }
+
+        function pcmToWav(pcm16Data, sampleRate) {
+            const buffer = new ArrayBuffer(44 + pcm16Data.length * 2);
+            const view = new DataView(buffer);
+
+            // Write WAV Container Headers
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + pcm16Data.length * 2, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); // Raw PCM
+            view.setUint16(22, 1, true); // Mono
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true); // 16-bit
+            writeString(view, 36, 'data');
+            view.setUint32(40, pcm16Data.length * 2, true);
+
+            // Write PCM Audio Samples
+            let offset = 44;
+            for (let i = 0; i < pcm16Data.length; i++, offset += 2) {
+                view.setInt16(offset, pcm16Data[i], true);
+            }
+
+            return new Blob([view], { type: 'audio/wav' });
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        function fallbackWebSpeech(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-GB';
+                
+                // Locate British English voice if available on system
+                const voices = window.speechSynthesis.getVoices();
+                const ukVoice = voices.find(v => v.lang === 'en-GB' || v.lang === 'en_GB' || v.name.includes('UK') || v.name.includes('British'));
+                if (ukVoice) {
+                    utterance.voice = ukVoice;
+                }
+
+                utterance.onend = () => audioVisualizer.classList.add('hidden');
+                window.speechSynthesis.speak(utterance);
+            } else {
+                audioVisualizer.classList.add('hidden');
+            }
+        }
+
+        function appendChatMessage(sender, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'flex gap-3 ' + (sender === 'user' ? 'justify-end' : '');
+
+            if (sender === 'user') {
+                msgDiv.innerHTML = `
+                    <div class="bg-nhs-blue text-white p-3.5 rounded-2xl rounded-tr-none text-xs md:text-sm max-w-[85%] leading-relaxed shadow-xs">
+                        ${escapeHtml(text)}
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center shrink-0 text-xs font-bold">
+                        You
+                    </div>
+                `;
+            } else {
+                msgDiv.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-nhs-blue text-white flex items-center justify-center shrink-0 text-xs font-bold">
+                        ${activePersona.id === 'lindsay' ? 'LD' : (activePersona.id === 'sarah' ? 'SM' : 'MD')}
+                    </div>
+                    <div class="bg-slate-100 p-3.5 rounded-2xl rounded-tl-none text-xs md:text-sm text-slate-800 max-w-[88%] leading-relaxed shadow-xs">
+                        <p class="font-bold text-nhs-blue text-xs mb-1">${activePersona.name} • ${activePersona.title}</p>
+                        ${escapeHtml(text)}
+                    </div>
+                `;
+            }
+
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function appendTypingIndicator() {
+            const id = 'loading-' + Date.now();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = id;
+            loadingDiv.className = 'flex gap-3';
+            loadingDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-nhs-blue text-white flex items-center justify-center shrink-0 text-xs font-bold">
+                    ${activePersona.id === 'lindsay' ? 'LD' : (activePersona.id === 'sarah' ? 'SM' : 'MD')}
+                </div>
+                <div class="bg-slate-100 p-3.5 rounded-2xl rounded-tl-none text-xs text-slate-500 flex items-center gap-2 shadow-xs">
+                    <i class="fa-solid fa-circle-notch fa-spin text-nhs-blue"></i>
+                    <span>Consulting Conflict Management Notebook Database...</span>
+                </div>
+            `;
+            chatHistory.appendChild(loadingDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+            return id;
+        }
+
+        function removeChatMessage(elementId) {
+            const elem = document.getElementById(elementId);
+            if (elem) elem.remove();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        window.onload = function() {
+            // Load saved API key if exists
+            const savedKey = localStorage.getItem('gemini_api_key');
+            if(savedKey) {
+                apiKeyInput.value = savedKey;
+            }
+
+            // Handle Setup & Permissions Flow
+            startAppBtn.addEventListener('click', async () => {
+                const key = apiKeyInput.value.trim();
+                if (!key) {
+                    alert("Please enter a valid Gemini API Key to continue.");
+                    return;
+                }
+                
+                // Save Key securely to browser storage
+                API_KEY = key;
+                localStorage.setItem('gemini_api_key', API_KEY);
+                
+                // Update Button State
+                startAppBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Requesting Access...';
+
+                try {
+                    // Trigger browser microphone permission prompt
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    // Success: Stop tracks immediately (we just needed to grant permission)
+                    stream.getTracks().forEach(track => track.stop());
+                    
+                    // Hide Modal smoothly
+                    onboardingModal.classList.add('opacity-0');
+                    setTimeout(() => onboardingModal.classList.add('hidden'), 500);
+                    
+                    // Initialize speech engine now that we have permission
+                    initSpeechRecognition();
+                } catch (err) {
+                    console.warn("Microphone access denied:", err);
+                    alert("Microphone access was denied. You can still use the text input to ask questions.");
+                    
+                    // Hide Modal smoothly
+                    onboardingModal.classList.add('opacity-0');
+                    setTimeout(() => onboardingModal.classList.add('hidden'), 500);
+                    
+                    // Initialize speech engine (will fall back gracefully)
+                    initSpeechRecognition();
+                }
+            });
+
+            micBtn.addEventListener('click', toggleRecording);
+            sendBtn.addEventListener('click', () => handleUserSubmit(textInput.value.trim()));
+            textInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') handleUserSubmit(textInput.value.trim());
+            });
+
+            infoBtn.addEventListener('click', () => kbModal.classList.remove('hidden', 'flex') || kbModal.classList.add('flex'));
+            closeKbBtn.addEventListener('click', () => kbModal.classList.add('hidden'));
+        };
+    </script>
+</body>
+</html>
