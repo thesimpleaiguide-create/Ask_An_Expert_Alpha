@@ -441,6 +441,8 @@
 
         // API Key handled dynamically via UI
         let API_KEY = ""; 
+        let resolvedTextModel = null;
+        let resolvedTtsModel = null;
 
         // DOM Element Selectors
         const micBtn = document.getElementById('micBtn');
@@ -578,6 +580,38 @@
             });
         });
 
+        // NEW: Dynamic Model Discovery - Finds the exact models your API key supports
+        async function getSupportedModels() {
+            if (resolvedTextModel) return resolvedTextModel;
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.models) {
+                        // Find any Gemini 1.5 model (Flash or Pro) to ensure systemInstruction support
+                        const textModelObj = data.models.find(m => 
+                            (m.name.includes('gemini-1.5-flash') || m.name.includes('gemini-1.5-pro')) && 
+                            m.supportedGenerationMethods?.includes('generateContent')
+                        );
+                        if (textModelObj) resolvedTextModel = textModelObj.name.replace('models/', '');
+
+                        // Find TTS model if available on this key
+                        const ttsModelObj = data.models.find(m => 
+                            m.name.includes('tts') && 
+                            m.supportedGenerationMethods?.includes('generateContent')
+                        );
+                        if (ttsModelObj) resolvedTtsModel = ttsModelObj.name.replace('models/', '');
+                    }
+                }
+            } catch(e) {
+                console.warn("Failed to fetch models list, using fallbacks", e);
+            }
+            
+            // Safe fallback if discovery fails
+            if (!resolvedTextModel) resolvedTextModel = 'gemini-1.5-flash-latest';
+            return resolvedTextModel;
+        }
+
         // Exponential backoff fetch helper
         async function fetchWithRetry(url, options, maxRetries = 4) {
             let delay = 1000;
@@ -624,7 +658,9 @@
                     }
                 };
 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
+                // FIX: Dynamically detect the correct model name available to the user's API Key
+                const activeModel = await getSupportedModels();
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${API_KEY}`;
                 
                 const response = await fetchWithRetry(apiUrl, {
                     method: 'POST',
@@ -634,6 +670,13 @@
 
                 const data = await response.json();
                 removeChatMessage(loadingBubbleId);
+
+                // FIX: Better error handling to show exactly why the API fails (e.g. invalid key)
+                if (!response.ok) {
+                    console.error("Gemini API Error details:", data);
+                    appendChatMessage('ai', `API Connection Error: ${data.error?.message || 'Please verify your API key is correct.'}`);
+                    return;
+                }
 
                 const aiReplyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I could not retrieve an answer from the NHS training database.";
 
@@ -657,6 +700,14 @@
             audioVisualizer.classList.remove('hidden');
 
             try {
+                // Check if TTS is actually available on this user's API key
+                await getSupportedModels();
+                if (!resolvedTtsModel) {
+                    console.warn("Gemini TTS is not available on this API key. Falling back to native browser speech.");
+                    fallbackWebSpeech(textToSpeak);
+                    return;
+                }
+
                 // Explicitly prompt Gemini TTS for a clear, natural British accent
                 const ttsPayload = {
                     contents: [{
@@ -670,16 +721,21 @@
                             }
                         }
                     },
-                    model: "gemini-2.5-flash-preview-tts"
+                    model: resolvedTtsModel
                 };
 
-                const ttsUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
+                const ttsUrl = `https://generativelanguage.googleapis.com/v1beta/models/${resolvedTtsModel}:generateContent?key=${API_KEY}`;
                 
                 const response = await fetchWithRetry(ttsUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(ttsPayload)
                 });
+
+                // FIX: Instantly catch TTS API rejection (e.g. model not available to public keys)
+                if (!response.ok) {
+                    throw new Error("TTS API unavailable for this public API key, gracefully falling back to browser speech.");
+                }
 
                 const result = await response.json();
                 const part = result?.candidates?.[0]?.content?.parts?.[0];
