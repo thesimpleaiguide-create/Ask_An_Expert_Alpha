@@ -625,8 +625,8 @@
                 console.warn("Network error fetching models list, using fallbacks", e);
             }
             
-            // Ultimate safe fallback if discovery fails or list is empty (gemini-pro is universally available)
-            if (!resolvedTextModel) resolvedTextModel = 'gemini-pro'; 
+            // Ultimate safe fallback if discovery fails or list is empty
+            if (!resolvedTextModel) resolvedTextModel = 'gemini-1.5-flash'; 
             return resolvedTextModel;
         }
 
@@ -686,7 +686,13 @@
                     body: JSON.stringify(promptPayload)
                 });
 
-                const data = await response.json();
+                let data;
+                try {
+                    data = await response.json();
+                } catch (parseErr) {
+                    throw new Error("Invalid response from server. A firewall or network proxy may be intercepting and blocking the API request.");
+                }
+
                 removeChatMessage(loadingBubbleId);
 
                 // FIX: Better error handling to show exactly why the API fails (e.g. invalid key)
@@ -709,7 +715,15 @@
             } catch (error) {
                 console.error("Gemini API error:", error);
                 removeChatMessage(loadingBubbleId);
-                appendChatMessage('ai', "I encountered a connection issue accessing the Conflict Management database. Please check your network and try again.");
+                
+                let errorMsg = "I encountered a connection issue.";
+                if (error.message.includes("Failed to fetch") || error.message.includes("failed after retries")) {
+                    errorMsg = "Network Error: Could not reach Google's servers. This is usually caused by a strict corporate firewall (e.g., NHS IT network), a VPN, or a browser Ad-Blocker blocking the API request.";
+                } else {
+                    errorMsg = `System Error: ${error.message}`;
+                }
+                
+                appendChatMessage('ai', errorMsg);
             }
         }
 
