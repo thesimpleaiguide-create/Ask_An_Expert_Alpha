@@ -588,27 +588,45 @@
                 if (res.ok) {
                     const data = await res.json();
                     if (data.models) {
-                        // Find any Gemini 1.5 model (Flash or Pro) to ensure systemInstruction support
-                        const textModelObj = data.models.find(m => 
-                            (m.name.includes('gemini-1.5-flash') || m.name.includes('gemini-1.5-pro')) && 
-                            m.supportedGenerationMethods?.includes('generateContent')
+                        console.log("Available models for this API key:", data.models.map(m => m.name));
+                        
+                        // Find any available Gemini model that supports text generation
+                        const textModels = data.models.filter(m => 
+                            m.name.includes('gemini') && 
+                            m.supportedGenerationMethods?.includes('generateContent') &&
+                            !m.name.includes('vision')
                         );
-                        if (textModelObj) resolvedTextModel = textModelObj.name.replace('models/', '');
+                        
+                        if (textModels.length > 0) {
+                            // Prioritize 1.5 Flash, then 1.5 Pro, then fallback to whatever is first available
+                            const preferred = textModels.find(m => m.name.includes('gemini-1.5-flash')) || 
+                                              textModels.find(m => m.name.includes('gemini-1.5-pro')) || 
+                                              textModels.find(m => m.name.includes('gemini-pro')) ||
+                                              textModels[0];
+                                              
+                            resolvedTextModel = preferred.name.replace('models/', '');
+                            console.log("Automatically selected Text Model:", resolvedTextModel);
+                        }
 
                         // Find TTS model if available on this key
                         const ttsModelObj = data.models.find(m => 
                             m.name.includes('tts') && 
                             m.supportedGenerationMethods?.includes('generateContent')
                         );
-                        if (ttsModelObj) resolvedTtsModel = ttsModelObj.name.replace('models/', '');
+                        if (ttsModelObj) {
+                            resolvedTtsModel = ttsModelObj.name.replace('models/', '');
+                            console.log("Automatically selected TTS Model:", resolvedTtsModel);
+                        }
                     }
+                } else {
+                    console.error("Failed to fetch model list. Status:", res.status);
                 }
             } catch(e) {
-                console.warn("Failed to fetch models list, using fallbacks", e);
+                console.warn("Network error fetching models list, using fallbacks", e);
             }
             
-            // Safe fallback if discovery fails
-            if (!resolvedTextModel) resolvedTextModel = 'gemini-1.5-flash-latest';
+            // Ultimate safe fallback if discovery fails or list is empty (gemini-pro is universally available)
+            if (!resolvedTextModel) resolvedTextModel = 'gemini-pro'; 
             return resolvedTextModel;
         }
 
