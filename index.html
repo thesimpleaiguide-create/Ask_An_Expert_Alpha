@@ -580,78 +580,6 @@
             });
         });
 
-        // NEW: Dynamic Model Discovery - Finds the exact models your API key supports
-        async function getSupportedModels() {
-            if (resolvedTextModel) return resolvedTextModel;
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.models) {
-                        console.log("Available models for this API key:", data.models.map(m => m.name));
-                        
-                        // Find any available Gemini model that supports text generation
-                        const textModels = data.models.filter(m => 
-                            m.name.includes('gemini') && 
-                            m.supportedGenerationMethods?.includes('generateContent') &&
-                            !m.name.includes('vision')
-                        );
-                        
-                        if (textModels.length > 0) {
-                            // Prioritize 1.5 Flash, then 1.5 Pro, then fallback to whatever is first available
-                            const preferred = textModels.find(m => m.name.includes('gemini-1.5-flash')) || 
-                                              textModels.find(m => m.name.includes('gemini-1.5-pro')) || 
-                                              textModels.find(m => m.name.includes('gemini-pro')) ||
-                                              textModels[0];
-                                              
-                            resolvedTextModel = preferred.name.replace('models/', '');
-                            console.log("Automatically selected Text Model:", resolvedTextModel);
-                        }
-
-                        // Find TTS model if available on this key
-                        const ttsModelObj = data.models.find(m => 
-                            m.name.includes('tts') && 
-                            m.supportedGenerationMethods?.includes('generateContent')
-                        );
-                        if (ttsModelObj) {
-                            resolvedTtsModel = ttsModelObj.name.replace('models/', '');
-                            console.log("Automatically selected TTS Model:", resolvedTtsModel);
-                        }
-                    }
-                } else {
-                    console.error("Failed to fetch model list. Status:", res.status);
-                }
-            } catch(e) {
-                console.warn("Network error fetching models list, using fallbacks", e);
-            }
-            
-            // Ultimate safe fallback if discovery fails or list is empty
-            if (!resolvedTextModel) resolvedTextModel = 'gemini-1.5-flash'; 
-            return resolvedTextModel;
-        }
-
-        // Exponential backoff fetch helper
-        async function fetchWithRetry(url, options, maxRetries = 4) {
-            let delay = 1000;
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (response.ok) return response;
-                    if (response.status === 429 || response.status >= 500) {
-                        await new Promise(r => setTimeout(r, delay));
-                        delay *= 2;
-                        continue;
-                    }
-                    return response;
-                } catch (err) {
-                    if (i === maxRetries - 1) throw err;
-                    await new Promise(r => setTimeout(r, delay));
-                    delay *= 2;
-                }
-            }
-            throw new Error("API call failed after retries.");
-        }
-
         async function handleUserSubmit(userQuestion) {
             if (!userQuestion || userQuestion.trim() === '') return;
 
@@ -676,29 +604,57 @@
                     }
                 };
 
-                // FIX: Dynamically detect the correct model name available to the user's API Key
-                const activeModel = await getSupportedModels();
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${API_KEY}`;
-                
-                const response = await fetchWithRetry(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(promptPayload)
-                });
+                // FIX: Waterfall Model Fallback - Automatically tries models until it finds one your AQ. key supports
+                const modelsToTry = [
+                    'gemini-1.5-flash',
+                    'gemini-1.5-pro',
+                    'gemini-pro',
+                    'gemini-1.5-flash-8b',
+                    'gemini-2.5-flash-preview-09-2025'
+                ];
 
-                let data;
-                try {
-                    data = await response.json();
-                } catch (parseErr) {
-                    throw new Error("Invalid response from server. A firewall or network proxy may be intercepting and blocking the API request.");
+                let response = null;
+                let data = null;
+                let successfulModel = null;
+
+                for (const model of modelsToTry) {
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`;
+                    
+                    try {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(promptPayload)
+                        });
+
+                        data = await response.json();
+
+                        if (response.ok) {
+                            successfulModel = model;
+                            console.log(`Success! Connected using model: ${model}`);
+                            break; // Stop looking, this model works!
+                        } else if (response.status === 404) {
+                            console.warn(`Model ${model} not found for this key. Trying next...`);
+                            continue; // Try the next model in the list
+                        } else {
+                            // If we get a real error (e.g., 400 Bad Request, 403 Forbidden), stop and show it
+                            break; 
+                        }
+                    } catch (fetchErr) {
+                        // True network/CORS block from the browser
+                        throw fetchErr;
+                    }
                 }
 
                 removeChatMessage(loadingBubbleId);
 
-                // FIX: Better error handling to show exactly why the API fails (e.g. invalid key)
-                if (!response.ok) {
+                if (!response || !response.ok) {
+                    let errorMsg = data?.error?.message || "Unknown API Error.";
+                    if (response?.status === 404) {
+                        errorMsg = "None of the standard Gemini models are enabled for this API key. Please check your Google AI Studio account settings.";
+                    }
                     console.error("Gemini API Error details:", data);
-                    appendChatMessage('ai', `API Connection Error: ${data.error?.message || 'Please verify your API key is correct.'}`);
+                    appendChatMessage('ai', `API Error (${response?.status || 'Failed'}): ${errorMsg}`);
                     return;
                 }
 
@@ -717,8 +673,8 @@
                 removeChatMessage(loadingBubbleId);
                 
                 let errorMsg = "I encountered a connection issue.";
-                if (error.message.includes("Failed to fetch") || error.message.includes("failed after retries")) {
-                    errorMsg = "Network Error: Could not reach Google's servers. This is usually caused by a strict corporate firewall (e.g., NHS IT network), a VPN, or a browser Ad-Blocker blocking the API request.";
+                if (error.name === 'TypeError' || error.message.includes("Failed to fetch")) {
+                    errorMsg = "Network/CORS Error: Your browser blocked the request. This usually happens if the API key is strictly restricted by Google. Try generating a fresh key at aistudio.google.com.";
                 } else {
                     errorMsg = `System Error: ${error.message}`;
                 }
@@ -732,14 +688,6 @@
             audioVisualizer.classList.remove('hidden');
 
             try {
-                // Check if TTS is actually available on this user's API key
-                await getSupportedModels();
-                if (!resolvedTtsModel) {
-                    console.warn("Gemini TTS is not available on this API key. Falling back to native browser speech.");
-                    fallbackWebSpeech(textToSpeak);
-                    return;
-                }
-
                 // Explicitly prompt Gemini TTS for a clear, natural British accent
                 const ttsPayload = {
                     contents: [{
@@ -753,20 +701,20 @@
                             }
                         }
                     },
-                    model: resolvedTtsModel
+                    model: "gemini-2.5-flash-preview-tts"
                 };
 
-                const ttsUrl = `https://generativelanguage.googleapis.com/v1beta/models/${resolvedTtsModel}:generateContent?key=${API_KEY}`;
+                const ttsUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
                 
-                const response = await fetchWithRetry(ttsUrl, {
+                const response = await fetch(ttsUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(ttsPayload)
                 });
 
-                // FIX: Instantly catch TTS API rejection (e.g. model not available to public keys)
+                // FIX: Instantly catch TTS API rejection (e.g. model not available to AQ keys) and fallback smoothly
                 if (!response.ok) {
-                    throw new Error("TTS API unavailable for this public API key, gracefully falling back to browser speech.");
+                    throw new Error(`TTS API unavailable for this key (Status: ${response.status})`);
                 }
 
                 const result = await response.json();
@@ -794,7 +742,7 @@
                 }
 
             } catch (err) {
-                console.warn("Gemini TTS failed, using browser speech synthesis fallback:", err);
+                console.warn("Gemini TTS not supported, using browser speech synthesis fallback:", err);
                 fallbackWebSpeech(textToSpeak);
             }
         }
