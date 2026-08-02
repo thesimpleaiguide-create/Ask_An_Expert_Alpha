@@ -318,7 +318,7 @@
                         <ul class="list-disc pl-5 mt-1 space-y-1">
                             <li><strong>4-Part Contact Structure:</strong> Open (role + purpose) -> Gather (1 focused question) -> Check (confirm key facts) -> Close (explicit plan by who/when + check understanding).</li>
                             <li><strong>Pace Control & Skilled Redirect:</strong> Validate, name what you heard, move forward. ("Can I just pause you there — what is worrying you most right now?")</li>
-                            <li><strong>Not Taking the Bait:</strong> Respond to the presupposition/need, not the attack/accusation. (Child metaphor: reward the good, don't feed the bad).</li>
+                            <li><strong>Not Taking the Bait:</strong> Respond to the presupposition/need, not the attack/accusation. (Child metaphor: ignore unhelpful behavior, address the need beneath).</li>
                             <li><strong>Third-Party Callers:</strong> Keep patient at the center. Validate concern without breaching confidentiality or granting unvetted demands.</li>
                             <li><strong>Clean Close:</strong> Confirm understanding aloud, state specific names/times (never "someone will be in touch"), safety net.</li>
                             <li><strong>Defensible Documentation:</strong> Record objective facts, exact statements, and boundaries set — avoid emotional labels ("patient was rude").</li>
@@ -627,41 +627,64 @@
                     }
                 };
 
+                const cleanKey = API_KEY ? API_KEY.trim() : "";
+                const isCustomKey = cleanKey !== "";
+
                 // DUAL-ENVIRONMENT MODEL CASCADE:
-                // Removed restricted 'gemini-2.0-flash' (which has 0 RPM limit on free tier).
-                // Cascades through active models that support generateContent on free/developer keys.
-                const isCustomKey = API_KEY && API_KEY.trim() !== "";
+                // Prioritize gemini-2.5-flash for custom keys (the standard AI Studio model name)
                 const endpointsToTry = isCustomKey ? [
+                    'v1beta/models/gemini-2.5-flash',
                     'v1beta/models/gemini-2.5-flash-preview-09-2025',
                     'v1beta/models/gemini-1.5-flash',
+                    'v1beta/models/gemini-2.5-pro',
                     'v1beta/models/gemini-1.5-pro',
-                    'v1/models/gemini-1.5-flash',
-                    'v1/models/gemini-1.5-pro'
+                    'v1/models/gemini-1.5-flash'
                 ] : [
                     'v1beta/models/gemini-2.5-flash-preview-09-2025'
                 ];
 
                 let response = null;
                 let data = null;
+                let lastErrorResponse = null;
+                let lastErrorData = null;
+                let hitRateLimit = false;
+                let rateLimitMessage = "";
 
                 for (const endpoint of endpointsToTry) {
-                    const apiUrl = `https://generativelanguage.googleapis.com/${endpoint}:generateContent?key=${API_KEY}`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/${endpoint}:generateContent?key=${cleanKey}`;
                     try {
-                        response = await fetchWithBackoff(apiUrl, {
+                        const res = await fetchWithBackoff(apiUrl, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(promptPayload)
                         });
 
-                        data = await response.json();
+                        const resData = await res.json().catch(() => null);
 
-                        if (response.ok) {
-                            break; // Successfully got response!
-                        } else if (response.status === 404 || response.status === 400 || response.status === 429) {
-                            console.warn(`Endpoint ${endpoint} returned status ${response.status}. Trying next model in cascade...`);
-                            continue; // Try next public model in list if model has zero quota or is missing
-                        } else {
-                            break; // Stop on non-recoverable error (e.g. 403 invalid key)
+                        if (res.ok) {
+                            response = res;
+                            data = resData;
+                            break; // Successfully connected!
+                        }
+
+                        lastErrorResponse = res;
+                        lastErrorData = resData;
+
+                        if (res.status === 429) {
+                            hitRateLimit = true;
+                            rateLimitMessage = resData?.error?.message || "Rate limit reached.";
+                            console.warn(`Endpoint ${endpoint} hit rate limit (429). Trying next model in cascade...`);
+                            continue;
+                        }
+
+                        if (res.status === 404 || res.status === 400) {
+                            console.warn(`Endpoint ${endpoint} returned status ${res.status}. Trying next model in cascade...`);
+                            continue;
+                        }
+
+                        // Stop on unrecoverable authentication errors
+                        if (res.status === 403) {
+                            break;
                         }
                     } catch (fetchErr) {
                         console.warn(`Fetch exception on ${endpoint}:`, fetchErr);
@@ -671,18 +694,21 @@
                 removeChatMessage(loadingBubbleId);
 
                 if (!response || !response.ok) {
-                    console.error("Gemini API Error details:", data);
-                    let errorMsg = data?.error?.message || 'Unable to connect to Gemini API.';
-                    
-                    if (response?.status === 429) {
-                        errorMsg = "API Rate Limit Reached (429): Free tier quota momentarily exceeded. Please wait a few seconds and try again.";
-                    } else if (response?.status === 403 && !isCustomKey) {
+                    const finalStatus = lastErrorResponse?.status || 'Failed';
+                    let errorMsg = lastErrorData?.error?.message || 'Unable to connect to Gemini API.';
+
+                    if (hitRateLimit) {
+                        errorMsg = `API Rate Limit / Quota Exceeded (429): ${rateLimitMessage}. Please wait a moment before trying again or check your quota at aistudio.google.com`;
+                    } else if (lastErrorResponse?.status === 403 && !isCustomKey) {
                         errorMsg = "API Key Required: When hosted externally on GitHub Pages, an API key is required. Please re-open setup and enter your Gemini API Key.";
-                    } else if (response?.status === 404) {
-                        errorMsg = "None of the standard Gemini models are authorized for this API key. Please verify your key at aistudio.google.com";
+                    } else if (lastErrorResponse?.status === 403 && isCustomKey) {
+                        errorMsg = `Forbidden (403): ${errorMsg}. Please check that your API key is valid and active at aistudio.google.com`;
+                    } else if (lastErrorResponse?.status === 404) {
+                        errorMsg = "None of the standard Gemini models (gemini-2.5-flash, gemini-1.5-flash) are authorized for this API key. Please verify your key and project at aistudio.google.com";
                     }
 
-                    appendChatMessage('ai', `API Connection Error (${response?.status || 'Failed'}): ${errorMsg}`);
+                    console.error("Gemini API Error details:", lastErrorData);
+                    appendChatMessage('ai', `API Connection Error (${finalStatus}): ${errorMsg}`);
                     return;
                 }
 
@@ -723,7 +749,8 @@
                     model: "gemini-2.5-flash-preview-tts"
                 };
 
-                const ttsUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
+                const cleanKey = API_KEY ? API_KEY.trim() : "";
+                const ttsUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${cleanKey}`;
                 
                 const response = await fetchWithBackoff(ttsUrl, {
                     method: 'POST',
