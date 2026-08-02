@@ -345,11 +345,11 @@
                 <p class="text-slate-300 mb-8 text-center max-w-xl">This interactive simulation requires microphone access so you can speak directly to the AI Expert.</p>
                 
                 <div class="w-full bg-[#313d50] border border-[#3e4c5e] rounded-lg p-6 md:p-8 text-left mb-8 shadow-inner">
-                    <!-- API Key Section (Optional for custom GitHub deployments) -->
+                    <!-- API Key Section -->
                     <div class="mb-6 pb-6 border-b border-[#475569]">
-                        <label class="block text-sm font-bold text-white mb-2">Gemini API Key (Optional):</label>
-                        <input type="password" id="apiKeyInput" placeholder="Leave blank to use built-in environment runtime key..." class="w-full bg-[#1e2532] border border-[#475569] rounded-md px-4 py-3 text-slate-200 focus:outline-none focus:border-[#60a5fa] transition-colors">
-                        <p class="text-[12px] text-slate-400 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> Leave empty inside preview. Provide a key only if hosting externally on GitHub Pages.</p>
+                        <label class="block text-sm font-bold text-white mb-2">Gemini API Key:</label>
+                        <input type="password" id="apiKeyInput" placeholder="Enter key (e.g. AQ.Ab8RN... or AIza...)" class="w-full bg-[#1e2532] border border-[#475569] rounded-md px-4 py-3 text-slate-200 focus:outline-none focus:border-[#60a5fa] transition-colors">
+                        <p class="text-[12px] text-slate-400 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> <strong>Note:</strong> Leave empty in preview mode. Enter your API Key if deployed on GitHub Pages.</p>
                     </div>
 
                     <!-- Microphone Steps Section -->
@@ -410,16 +410,16 @@
         - The 5 Rungs of the Ladder: Rung 1 Clarify -> Rung 2 Contain -> Rung 3 Reaffirm -> Rung 4 Consequence ("If shouting continues, I will end this call") -> Rung 5 Conclude/Escalate. Start low, climb slowly, step back down when patient calms. NEVER re-argue a stated boundary.
 
         MODULE 5: MANAGING CONTACTS UNDER PRESSURE
-        - 4-Part Contact Structure: Open (role + purpose + time) -> Gather (1 focused question) -> Check (confirm details) -> Close (explicit plan + check understanding).
+        - 4-Part Contact Structure: Open (role + purpose) -> Gather (1 focused question) -> Check (confirm key facts) -> Close (explicit plan by who/when + check understanding).
         - Pace Control & Skilled Redirect: Validate, name what you heard, move forward. ("Can I just pause you there — what is worrying you most right now?")
-        - Not Taking the Bait: Respond to the presupposition (the underlying need), NOT the bait/attack. (Child metaphor: ignore unhelpful behavior, address the need beneath).
-        - Third-Party Callers: Keep patient at center ("I need to speak with the patient directly"). Validate without breaching confidentiality.
+        - Not Taking the Bait: Respond to the presupposition/need, not the attack/accusation. (Child metaphor: ignore unhelpful behavior, address the need beneath).
+        - Third-Party Callers: Keep patient at center ("I need to speak with the patient directly"). Validate concern without breaching confidentiality.
         - Clean Close: Confirm understanding aloud, explicit plan (specific name, action, time — NEVER "someone will be in touch"), safety net.
-        - Defensible & Neutral Documentation: Record factual statements, exact words, and boundaries set — avoid emotional labels ("patient was aggressive").
+        - Defensible Documentation: Record objective facts, exact statements, and boundaries set — avoid emotional labels ("patient was rude").
 
         MODULE 6: RESILIENCE & WELLBEING
         - Resilience = The ability to RESET, not the ability to endure abuse or cope alone.
-        - Micro-Resilience Tools: Box Breathing (4-4-4-4 rhythm), Sensory Grounding, Silent Self-Talk Reset ("This frustration is not about me. I am here to help, not to absorb their feelings").
+        - Micro-Resilience Tools: Box Breathing (4-4-4-4 rhythm), Sensory Grounding, Silent Self-Talk ("This frustration is not about me. I am here to help, not to absorb their feelings").
         - Counteract Negativity Bias: Share compliments, debrief objectively, shift language from "that was challenging, but we handled it."
 
         RESPONSE FORMAT GUIDELINES:
@@ -439,7 +439,7 @@
         let isRecording = false;
         let speechRecognition = null;
 
-        // Default to empty string so execution environment provides authentication automatically
+        // Default to empty string for preview environment runtime authentication
         let API_KEY = ""; 
 
         // DOM Element Selectors
@@ -578,7 +578,7 @@
             });
         });
 
-        // Mandatory exponential backoff retry helper (1s, 2s, 4s, 8s, 16s)
+        // Exponential Backoff helper: 1s, 2s, 4s, 8s, 16s
         async function fetchWithBackoff(url, options) {
             const delays = [1000, 2000, 4000, 8000, 16000];
             let lastErr = null;
@@ -592,7 +592,7 @@
                             continue;
                         }
                     }
-                    return response; // Non-retryable HTTP error (e.g. 400)
+                    return response; // Return HTTP error status (400, 403, 404)
                 } catch (err) {
                     lastErr = err;
                     if (i < delays.length) {
@@ -615,7 +615,6 @@
             const loadingBubbleId = appendTypingIndicator();
 
             try {
-                // Construct Gemini Payload with Grounded System Instructions
                 const promptPayload = {
                     contents: [
                         {
@@ -628,21 +627,61 @@
                     }
                 };
 
-                // Mandatory Preview Text Model Endpoint
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
-                
-                const response = await fetchWithBackoff(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(promptPayload)
-                });
+                // DUAL-ENVIRONMENT MODEL CASCADE:
+                // If API_KEY is empty (preview mode), use preview model.
+                // If custom key is provided (GitHub deployment), cascade through standard public models.
+                const isCustomKey = API_KEY && API_KEY.trim() !== "";
+                const endpointsToTry = isCustomKey ? [
+                    'v1beta/models/gemini-1.5-flash',
+                    'v1beta/models/gemini-2.0-flash',
+                    'v1beta/models/gemini-1.5-pro',
+                    'v1/models/gemini-1.5-flash',
+                    'v1/models/gemini-1.5-pro',
+                    'v1beta/models/gemini-2.5-flash-preview-09-2025'
+                ] : [
+                    'v1beta/models/gemini-2.5-flash-preview-09-2025'
+                ];
 
-                const data = await response.json();
+                let response = null;
+                let data = null;
+
+                for (const endpoint of endpointsToTry) {
+                    const apiUrl = `https://generativelanguage.googleapis.com/${endpoint}:generateContent?key=${API_KEY}`;
+                    try {
+                        response = await fetchWithBackoff(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(promptPayload)
+                        });
+
+                        data = await response.json();
+
+                        if (response.ok) {
+                            break; // Successfully got response!
+                        } else if (response.status === 404 || response.status === 400) {
+                            console.warn(`Endpoint ${endpoint} returned status ${response.status}. Trying next model...`);
+                            continue; // Try next public model
+                        } else {
+                            break; // Stop on non-recoverable error (e.g. 403 invalid key)
+                        }
+                    } catch (fetchErr) {
+                        console.warn(`Fetch exception on ${endpoint}:`, fetchErr);
+                    }
+                }
+
                 removeChatMessage(loadingBubbleId);
 
-                if (!response.ok) {
+                if (!response || !response.ok) {
                     console.error("Gemini API Error details:", data);
-                    appendChatMessage('ai', `API Connection Error (${response.status}): ${data.error?.message || 'Unable to connect to Gemini API.'}`);
+                    let errorMsg = data?.error?.message || 'Unable to connect to Gemini API.';
+                    
+                    if (response?.status === 403 && !isCustomKey) {
+                        errorMsg = "API Key Required: When hosted externally on GitHub Pages, an API key is required. Please re-open setup and enter your Gemini API Key.";
+                    } else if (response?.status === 404) {
+                        errorMsg = "None of the standard Gemini models are authorized for this API key. Please verify your key at aistudio.google.com";
+                    }
+
+                    appendChatMessage('ai', `API Connection Error (${response?.status || 'Failed'}): ${errorMsg}`);
                     return;
                 }
 
@@ -691,36 +730,34 @@
                     body: JSON.stringify(ttsPayload)
                 });
 
-                if (!response.ok) {
-                    throw new Error(`TTS API returned status ${response.status}`);
+                if (response && response.ok) {
+                    const result = await response.json();
+                    const part = result?.candidates?.[0]?.content?.parts?.[0];
+                    const base64Audio = part?.inlineData?.data;
+                    const mimeType = part?.inlineData?.mimeType || "audio/L16;rate=24000";
+
+                    if (base64Audio) {
+                        const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                        const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 24000;
+
+                        const pcm16Array = base64ToPCM16(base64Audio);
+                        const wavBlob = pcmToWav(pcm16Array, sampleRate);
+                        const audioUrl = URL.createObjectURL(wavBlob);
+
+                        const audioPlayer = new Audio(audioUrl);
+                        audioPlayer.onended = () => {
+                            audioVisualizer.classList.add('hidden');
+                        };
+                        audioPlayer.play();
+                        return;
+                    }
                 }
-
-                const result = await response.json();
-                const part = result?.candidates?.[0]?.content?.parts?.[0];
-                const base64Audio = part?.inlineData?.data;
-                const mimeType = part?.inlineData?.mimeType || "audio/L16;rate=24000";
-
-                if (base64Audio) {
-                    const sampleRateMatch = mimeType.match(/rate=(\d+)/);
-                    const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 24000;
-
-                    const pcm16Array = base64ToPCM16(base64Audio);
-                    const wavBlob = pcmToWav(pcm16Array, sampleRate);
-                    const audioUrl = URL.createObjectURL(wavBlob);
-
-                    const audioPlayer = new Audio(audioUrl);
-                    audioPlayer.onended = () => {
-                        audioVisualizer.classList.add('hidden');
-                    };
-                    audioPlayer.play();
-                } else {
-                    fallbackWebSpeech(textToSpeak);
-                }
-
             } catch (err) {
-                console.warn("Gemini TTS fallback triggered, using browser speech synthesis:", err);
-                fallbackWebSpeech(textToSpeak);
+                console.warn("Gemini TTS API not available for this key/environment, falling back to Web Speech synthesis:", err);
             }
+
+            // Fallback for custom keys & GitHub Pages
+            fallbackWebSpeech(textToSpeak);
         }
 
         function base64ToPCM16(base64) {
@@ -850,7 +887,6 @@
 
             startAppBtn.addEventListener('click', async () => {
                 const key = apiKeyInput.value.trim();
-                // Store Key if provided, otherwise leave as "" for runtime environment authentication
                 API_KEY = key;
                 if (key) {
                     localStorage.setItem('gemini_api_key', API_KEY);
