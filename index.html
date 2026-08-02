@@ -338,18 +338,18 @@
             </div>
         </div>
 
-        <!-- NEW: Onboarding / Setup Screen -->
+        <!-- Onboarding / Setup Screen -->
         <div id="onboardingModal" class="fixed inset-0 z-[100] bg-slate-900/90 flex items-center justify-center p-4 transition-opacity duration-500">
             <div class="max-w-3xl w-full bg-[#263040] rounded-xl shadow-2xl p-8 md:p-10 flex flex-col items-center border border-[#3e4c5e]">
                 <h2 class="text-2xl md:text-3xl font-bold text-[#60a5fa] mb-3 text-center">Before We Begin: Audio Setup</h2>
-                <p class="text-slate-300 mb-8 text-center max-w-xl">This interactive simulation requires your Gemini API key and microphone access so you can speak directly to the AI Expert.</p>
+                <p class="text-slate-300 mb-8 text-center max-w-xl">This interactive simulation requires microphone access so you can speak directly to the AI Expert.</p>
                 
                 <div class="w-full bg-[#313d50] border border-[#3e4c5e] rounded-lg p-6 md:p-8 text-left mb-8 shadow-inner">
-                    <!-- API Key Section -->
+                    <!-- API Key Section (Optional for custom GitHub deployments) -->
                     <div class="mb-6 pb-6 border-b border-[#475569]">
-                        <label class="block text-sm font-bold text-white mb-2">Enter your Gemini API Key:</label>
-                        <input type="password" id="apiKeyInput" placeholder="AQ.Ab8RN..." class="w-full bg-[#1e2532] border border-[#475569] rounded-md px-4 py-3 text-slate-200 focus:outline-none focus:border-[#60a5fa] transition-colors">
-                        <p class="text-[12px] text-slate-400 mt-2"><i class="fa-solid fa-lock mr-1"></i> Your key is saved locally in your browser and never sent to our servers.</p>
+                        <label class="block text-sm font-bold text-white mb-2">Gemini API Key (Optional):</label>
+                        <input type="password" id="apiKeyInput" placeholder="Leave blank to use built-in environment runtime key..." class="w-full bg-[#1e2532] border border-[#475569] rounded-md px-4 py-3 text-slate-200 focus:outline-none focus:border-[#60a5fa] transition-colors">
+                        <p class="text-[12px] text-slate-400 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> Leave empty inside preview. Provide a key only if hosting externally on GitHub Pages.</p>
                     </div>
 
                     <!-- Microphone Steps Section -->
@@ -406,8 +406,8 @@
         MODULE 4: THE BOUNDARIES LADDER
         - Reframe: A boundary is NOT a wall or threat. It is a condition: "I will continue to help you, on condition that..."
         - Boundary Formula (That does not invite argument): 1 Clear Limit + 1 Rationale + 1 Option.
-          Sequence matters: Limit first, Rationale second, Option third. (e.g., "I'm not able to offer a same-day slot today [limit] because acute capacity is reserved for medical emergencies [rationale]. What I can offer is a callback from the duty pharmacist [option].")
-        - The 5 Rungs of the Ladder: Rung 1 Clarify -> Rung 2 Contain -> Rung 3 Reaffirm -> Rung 4 Consequence ("If the shouting continues, I will end this call") -> Rung 5 Conclude/Escalate. Start low, climb slowly, step back down when patient calms. NEVER re-argue a stated boundary.
+          Sequence matters: Limit first, Rationale second, Option third. (e.g., "I'm not able to offer a same-day slot today [limit] because acute capacity is reserved for medical emergencies [rationale]. What I can offer is a callback from the duty pharmacist or routine slot tomorrow [option].")
+        - The 5 Rungs of the Ladder: Rung 1 Clarify -> Rung 2 Contain -> Rung 3 Reaffirm -> Rung 4 Consequence ("If shouting continues, I will end this call") -> Rung 5 Conclude/Escalate. Start low, climb slowly, step back down when patient calms. NEVER re-argue a stated boundary.
 
         MODULE 5: MANAGING CONTACTS UNDER PRESSURE
         - 4-Part Contact Structure: Open (role + purpose + time) -> Gather (1 focused question) -> Check (confirm details) -> Close (explicit plan + check understanding).
@@ -420,7 +420,7 @@
         MODULE 6: RESILIENCE & WELLBEING
         - Resilience = The ability to RESET, not the ability to endure abuse or cope alone.
         - Micro-Resilience Tools: Box Breathing (4-4-4-4 rhythm), Sensory Grounding, Silent Self-Talk Reset ("This frustration is not about me. I am here to help, not to absorb their feelings").
-        - Counteract Negativity Bias: Share compliments, debrief objectively, shift language from "that was, challenging, but we handled it."
+        - Counteract Negativity Bias: Share compliments, debrief objectively, shift language from "that was challenging, but we handled it."
 
         RESPONSE FORMAT GUIDELINES:
         - Keep responses concise (3-4 clear, direct sentences) so they sound natural and authoritative when converted into spoken AI audio.
@@ -439,7 +439,7 @@
         let isRecording = false;
         let speechRecognition = null;
 
-        // API Key handled dynamically via UI
+        // Default to empty string so execution environment provides authentication automatically
         let API_KEY = ""; 
 
         // DOM Element Selectors
@@ -578,6 +578,32 @@
             });
         });
 
+        // Mandatory exponential backoff retry helper (1s, 2s, 4s, 8s, 16s)
+        async function fetchWithBackoff(url, options) {
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            let lastErr = null;
+            for (let i = 0; i <= delays.length; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) return response;
+                    if (response.status === 429 || response.status >= 500) {
+                        if (i < delays.length) {
+                            await new Promise(r => setTimeout(r, delays[i]));
+                            continue;
+                        }
+                    }
+                    return response; // Non-retryable HTTP error (e.g. 400)
+                } catch (err) {
+                    lastErr = err;
+                    if (i < delays.length) {
+                        await new Promise(r => setTimeout(r, delays[i]));
+                        continue;
+                    }
+                }
+            }
+            throw lastErr || new Error("Failed after maximum retries.");
+        }
+
         async function handleUserSubmit(userQuestion) {
             if (!userQuestion || userQuestion.trim() === '') return;
 
@@ -589,7 +615,7 @@
             const loadingBubbleId = appendTypingIndicator();
 
             try {
-                // Construct Gemini Prompt with Grounded Knowledge Base System Instructions
+                // Construct Gemini Payload with Grounded System Instructions
                 const promptPayload = {
                     contents: [
                         {
@@ -602,51 +628,21 @@
                     }
                 };
 
-                // FIX: Updated endpoint cascade for modern AQ. keys (targeting standard Google Cloud Generative Language / AI Studio endpoints)
-                const endpointsToTry = [
-                    'v1/models/gemini-1.5-flash',
-                    'v1beta/models/gemini-1.5-flash',
-                    'v1/models/gemini-1.5-pro',
-                    'v1beta/models/gemini-1.5-pro',
-                    'v1/models/gemini-pro',
-                    'v1beta/models/gemini-pro'
-                ];
+                // Mandatory Preview Text Model Endpoint
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
+                
+                const response = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(promptPayload)
+                });
 
-                let response = null;
-                let data = null;
-
-                for (const endpoint of endpointsToTry) {
-                    const apiUrl = `https://generativelanguage.googleapis.com/${endpoint}:generateContent?key=${API_KEY}`;
-                    
-                    try {
-                        response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(promptPayload)
-                        });
-
-                        data = await response.json();
-
-                        if (response.ok) {
-                            console.log(`Success with AQ. key using endpoint: ${endpoint}`);
-                            break; 
-                        } else if (response.status === 404 || response.status === 400) {
-                            console.warn(`Endpoint ${endpoint} returned status ${response.status}. Trying next...`);
-                            continue; 
-                        } else {
-                            break; 
-                        }
-                    } catch (fetchErr) {
-                        throw fetchErr;
-                    }
-                }
-
+                const data = await response.json();
                 removeChatMessage(loadingBubbleId);
 
-                if (!response || !response.ok) {
-                    let errorMsg = data?.error?.message || "Unknown API Error.";
-                    console.error("AQ. Key API Error details:", data);
-                    appendChatMessage('ai', `API Error (${response?.status || 'Failed'}): ${errorMsg}`);
+                if (!response.ok) {
+                    console.error("Gemini API Error details:", data);
+                    appendChatMessage('ai', `API Connection Error (${response.status}): ${data.error?.message || 'Unable to connect to Gemini API.'}`);
                     return;
                 }
 
@@ -663,15 +659,7 @@
             } catch (error) {
                 console.error("Gemini API error:", error);
                 removeChatMessage(loadingBubbleId);
-                
-                let errorMsg = "I encountered a connection issue.";
-                if (error.name === 'TypeError' || error.message.includes("Failed to fetch")) {
-                    errorMsg = "Network/CORS Error: Browser blocked the connection. Ensure your AQ. key is active and allowed for Generative Language API.";
-                } else {
-                    errorMsg = `System Error: ${error.message}`;
-                }
-                
-                appendChatMessage('ai', errorMsg);
+                appendChatMessage('ai', "I encountered a connection issue accessing the Conflict Management database. Please check your network and try again.");
             }
         }
 
@@ -692,19 +680,19 @@
                             }
                         }
                     },
-                    model: "gemini-1.5-flash"
+                    model: "gemini-2.5-flash-preview-tts"
                 };
 
-                const ttsUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+                const ttsUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
                 
-                const response = await fetch(ttsUrl, {
+                const response = await fetchWithBackoff(ttsUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(ttsPayload)
                 });
 
                 if (!response.ok) {
-                    throw new Error(`TTS fallback triggered (Status: ${response.status})`);
+                    throw new Error(`TTS API returned status ${response.status}`);
                 }
 
                 const result = await response.json();
@@ -730,7 +718,7 @@
                 }
 
             } catch (err) {
-                console.warn("Gemini audio generation not supported for this AQ key, using browser speech synthesis fallback:", err);
+                console.warn("Gemini TTS fallback triggered, using browser speech synthesis:", err);
                 fallbackWebSpeech(textToSpeak);
             }
         }
@@ -862,13 +850,13 @@
 
             startAppBtn.addEventListener('click', async () => {
                 const key = apiKeyInput.value.trim();
-                if (!key) {
-                    alert("Please enter a valid Gemini API Key to continue.");
-                    return;
-                }
-                
+                // Store Key if provided, otherwise leave as "" for runtime environment authentication
                 API_KEY = key;
-                localStorage.setItem('gemini_api_key', API_KEY);
+                if (key) {
+                    localStorage.setItem('gemini_api_key', API_KEY);
+                } else {
+                    localStorage.removeItem('gemini_api_key');
+                }
                 
                 startAppBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Requesting Access...';
 
