@@ -330,7 +330,7 @@
                         <ul class="list-disc pl-5 mt-1 space-y-1">
                             <li><strong>Resilience Definition:</strong> The ability to reset — not to endure abuse or cope alone.</li>
                             <li><strong>Micro-Resilience Tools:</strong> Box Breathing (4-4-4-4 rhythm), Sensory Grounding, Silent Self-Talk ("This frustration is not about me. I am here to help, not to absorb their feelings").</li>
-                            <li><strong>Negativity Bias:</strong> Counteract by sharing positive feedback, debriefing objectively, and shifting language to "that was challenging, but we handled it."</li>
+                            <li><strong>Negativity Bias:</strong> Counteract by sharing positive feedback, debriefing objectively, and shifting language from "that was challenging, but we handled it."</li>
                         </ul>
                     </div>
 
@@ -578,7 +578,7 @@
             });
         });
 
-        // Exponential Backoff helper: 1s, 2s, 4s, 8s, 16s
+        // Mandatory exponential backoff helper: 1s, 2s, 4s, 8s, 16s
         async function fetchWithBackoff(url, options) {
             const delays = [1000, 2000, 4000, 8000, 16000];
             let lastErr = null;
@@ -592,7 +592,7 @@
                             continue;
                         }
                     }
-                    return response; // Return HTTP error status (400, 403, 404)
+                    return response; // Return HTTP error status (400, 403, 404, 429)
                 } catch (err) {
                     lastErr = err;
                     if (i < delays.length) {
@@ -628,16 +628,15 @@
                 };
 
                 // DUAL-ENVIRONMENT MODEL CASCADE:
-                // If API_KEY is empty (preview mode), use preview model.
-                // If custom key is provided (GitHub deployment), cascade through standard public models.
+                // Removed restricted 'gemini-2.0-flash' (which has 0 RPM limit on free tier).
+                // Cascades through active models that support generateContent on free/developer keys.
                 const isCustomKey = API_KEY && API_KEY.trim() !== "";
                 const endpointsToTry = isCustomKey ? [
+                    'v1beta/models/gemini-2.5-flash-preview-09-2025',
                     'v1beta/models/gemini-1.5-flash',
-                    'v1beta/models/gemini-2.0-flash',
                     'v1beta/models/gemini-1.5-pro',
                     'v1/models/gemini-1.5-flash',
-                    'v1/models/gemini-1.5-pro',
-                    'v1beta/models/gemini-2.5-flash-preview-09-2025'
+                    'v1/models/gemini-1.5-pro'
                 ] : [
                     'v1beta/models/gemini-2.5-flash-preview-09-2025'
                 ];
@@ -658,9 +657,9 @@
 
                         if (response.ok) {
                             break; // Successfully got response!
-                        } else if (response.status === 404 || response.status === 400) {
-                            console.warn(`Endpoint ${endpoint} returned status ${response.status}. Trying next model...`);
-                            continue; // Try next public model
+                        } else if (response.status === 404 || response.status === 400 || response.status === 429) {
+                            console.warn(`Endpoint ${endpoint} returned status ${response.status}. Trying next model in cascade...`);
+                            continue; // Try next public model in list if model has zero quota or is missing
                         } else {
                             break; // Stop on non-recoverable error (e.g. 403 invalid key)
                         }
@@ -675,7 +674,9 @@
                     console.error("Gemini API Error details:", data);
                     let errorMsg = data?.error?.message || 'Unable to connect to Gemini API.';
                     
-                    if (response?.status === 403 && !isCustomKey) {
+                    if (response?.status === 429) {
+                        errorMsg = "API Rate Limit Reached (429): Free tier quota momentarily exceeded. Please wait a few seconds and try again.";
+                    } else if (response?.status === 403 && !isCustomKey) {
                         errorMsg = "API Key Required: When hosted externally on GitHub Pages, an API key is required. Please re-open setup and enter your Gemini API Key.";
                     } else if (response?.status === 404) {
                         errorMsg = "None of the standard Gemini models are authorized for this API key. Please verify your key at aistudio.google.com";
