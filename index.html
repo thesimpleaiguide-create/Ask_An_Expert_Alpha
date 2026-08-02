@@ -404,7 +404,7 @@
         - MDE Mantra: "Calm dismantles manipulation. Consistency disarms entitlement. Fairness protects both patient and practice."
 
         MODULE 4: THE BOUNDARIES LADDER
-        - Reframe: A boundary is NOT a wall or threat. It is a condition: "I will continue to help you, on condition that..."
+        - Reframe: A boundary is NOT a wall or threat. It is a condition: "I will continue to help you if..."
         - Boundary Formula (That does not invite argument): 1 Clear Limit + 1 Rationale + 1 Option.
           Sequence matters: Limit first, Rationale second, Option third. (e.g., "I'm not able to offer a same-day slot today [limit] because acute capacity is reserved for medical emergencies [rationale]. What I can offer is a callback from the duty pharmacist or routine slot tomorrow [option].")
         - The 5 Rungs of the Ladder: Rung 1 Clarify -> Rung 2 Contain -> Rung 3 Reaffirm -> Rung 4 Consequence ("If shouting continues, I will end this call") -> Rung 5 Conclude/Escalate. Start low, climb slowly, step back down when patient calms. NEVER re-argue a stated boundary.
@@ -630,27 +630,24 @@
                 const cleanKey = API_KEY ? API_KEY.trim() : "";
                 const isCustomKey = cleanKey !== "";
 
-                // DUAL-ENVIRONMENT MODEL CASCADE:
-                // Prioritize gemini-2.5-flash for custom keys (the standard AI Studio model name)
+                // Exclusively target Flash models to prevent 0-quota Pro model errors on Free Tier keys
                 const endpointsToTry = isCustomKey ? [
                     'v1beta/models/gemini-2.5-flash',
-                    'v1beta/models/gemini-2.5-flash-preview-09-2025',
                     'v1beta/models/gemini-1.5-flash',
-                    'v1beta/models/gemini-2.5-pro',
-                    'v1beta/models/gemini-1.5-pro',
-                    'v1/models/gemini-1.5-flash'
+                    'v1/models/gemini-1.5-flash',
+                    'v1beta/models/gemini-2.5-flash-preview-09-2025'
                 ] : [
                     'v1beta/models/gemini-2.5-flash-preview-09-2025'
                 ];
 
                 let response = null;
                 let data = null;
-                let lastErrorResponse = null;
-                let lastErrorData = null;
-                let hitRateLimit = false;
-                let rateLimitMessage = "";
+                let rateLimitErrorData = null;
+                let primaryErrorData = null;
+                let primaryStatus = null;
 
-                for (const endpoint of endpointsToTry) {
+                for (let idx = 0; idx < endpointsToTry.length; idx++) {
+                    const endpoint = endpointsToTry[idx];
                     const apiUrl = `https://generativelanguage.googleapis.com/${endpoint}:generateContent?key=${cleanKey}`;
                     try {
                         const res = await fetchWithBackoff(apiUrl, {
@@ -661,29 +658,32 @@
 
                         const resData = await res.json().catch(() => null);
 
+                        if (idx === 0) {
+                            primaryStatus = res.status;
+                            primaryErrorData = resData;
+                        }
+
                         if (res.ok) {
                             response = res;
                             data = resData;
                             break; // Successfully connected!
                         }
 
-                        lastErrorResponse = res;
-                        lastErrorData = resData;
-
                         if (res.status === 429) {
-                            hitRateLimit = true;
-                            rateLimitMessage = resData?.error?.message || "Rate limit reached.";
-                            console.warn(`Endpoint ${endpoint} hit rate limit (429). Trying next model in cascade...`);
+                            rateLimitErrorData = resData;
+                            console.warn(`Endpoint ${endpoint} hit rate limit (429). Trying next Flash model...`);
                             continue;
                         }
 
                         if (res.status === 404 || res.status === 400) {
-                            console.warn(`Endpoint ${endpoint} returned status ${res.status}. Trying next model in cascade...`);
+                            console.warn(`Endpoint ${endpoint} returned status ${res.status}. Trying next model...`);
                             continue;
                         }
 
                         // Stop on unrecoverable authentication errors
                         if (res.status === 403) {
+                            primaryStatus = res.status;
+                            primaryErrorData = resData;
                             break;
                         }
                     } catch (fetchErr) {
@@ -694,20 +694,24 @@
                 removeChatMessage(loadingBubbleId);
 
                 if (!response || !response.ok) {
-                    const finalStatus = lastErrorResponse?.status || 'Failed';
-                    let errorMsg = lastErrorData?.error?.message || 'Unable to connect to Gemini API.';
-
-                    if (hitRateLimit) {
-                        errorMsg = `API Rate Limit / Quota Exceeded (429): ${rateLimitMessage}. Please wait a moment before trying again or check your quota at aistudio.google.com`;
-                    } else if (lastErrorResponse?.status === 403 && !isCustomKey) {
-                        errorMsg = "API Key Required: When hosted externally on GitHub Pages, an API key is required. Please re-open setup and enter your Gemini API Key.";
-                    } else if (lastErrorResponse?.status === 403 && isCustomKey) {
-                        errorMsg = `Forbidden (403): ${errorMsg}. Please check that your API key is valid and active at aistudio.google.com`;
-                    } else if (lastErrorResponse?.status === 404) {
-                        errorMsg = "None of the standard Gemini models (gemini-2.5-flash, gemini-1.5-flash) are authorized for this API key. Please verify your key and project at aistudio.google.com";
+                    if (rateLimitErrorData) {
+                        const errorMsg = rateLimitErrorData?.error?.message || "Rate limit or daily quota exceeded.";
+                        appendChatMessage('ai', `API Connection Error (429 Quota Exceeded): ${errorMsg}. Please check your current quota at aistudio.google.com`);
+                        return;
                     }
 
-                    console.error("Gemini API Error details:", lastErrorData);
+                    const finalStatus = primaryStatus || 'Failed';
+                    let errorMsg = primaryErrorData?.error?.message || 'Unable to connect to Gemini API.';
+
+                    if (primaryStatus === 403 && !isCustomKey) {
+                        errorMsg = "API Key Required: When hosted externally on GitHub Pages, an API key is required. Please re-open setup and enter your Gemini API Key.";
+                    } else if (primaryStatus === 403 && isCustomKey) {
+                        errorMsg = `Forbidden (403): ${errorMsg}. Please check that your API key is valid and active at aistudio.google.com`;
+                    } else if (primaryStatus === 404) {
+                        errorMsg = "None of the standard Gemini Flash models are authorized for this API key. Please verify your key and project at aistudio.google.com";
+                    }
+
+                    console.error("Gemini API Error details:", primaryErrorData);
                     appendChatMessage('ai', `API Connection Error (${finalStatus}): ${errorMsg}`);
                     return;
                 }
