@@ -6,30 +6,60 @@
     <title>NHS Conflict Management - Ask the Expert</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
+                        ttn: {
+                            navy: '#0C2340',
+                            blue: '#005EB8',
+                            blueHover: '#004A91',
+                            sky: '#59CBE8',
+                            orange: '#FE5000',
+                            orangeHover: '#E04600',
+                            slate: '#333F48',
+                            ice: '#DBE2E9',
+                            success: '#00BF6F',
+                            gold: '#FFC72C'
+                        },
                         nhs: {
                             blue: '#005A9C',
                             darkblue: '#003087',
                             brightblue: '#0072CE',
-                            lightbg: '#F0F4F8',
-                            warmgrey: '#E8EDF2',
-                            red: '#D81E05',
-                            green: '#007F3B'
+                            lightbg: '#F0F4F8'
                         }
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
+                        heading: ['Montserrat', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'ttn-sm': '4px',
+                        'ttn-soft': '8px',
+                    },
+                    boxShadow: {
+                        'ttn': '0px 4px 12px rgba(12, 35, 64, 0.08)',
+                        'ttn-hover': '0px 8px 20px rgba(12, 35, 64, 0.12)',
                     }
                 }
             }
         }
     </script>
     <style>
+        :root {
+            --ttn-navy: #0C2340;
+            --ttn-trust-blue: #005EB8;
+            --ttn-sky-cyan: #59CBE8;
+            --ttn-action-orange: #FE5000;
+            --ttn-slate: #333F48;
+            --ttn-ice-blue: #DBE2E9;
+            --ttn-success: #00BF6F;
+            --ttn-gold: #FFC72C;
+            --shadow-main: 0 4px 12px rgba(12, 35, 64, 0.08);
+        }
+
         @keyframes pulse-ring {
             0% { transform: scale(0.95); opacity: 0.8; }
             50% { transform: scale(1.15); opacity: 0.4; }
@@ -51,7 +81,54 @@
         .wave-bar:nth-child(4) { animation-delay: 0.45s; }
         .wave-bar:nth-child(5) { animation-delay: 0.6s; }
 
-        /* Custom scrollbar for modern look */
+        .persona-card {
+            transition: all 200ms ease-in-out;
+        }
+        .persona-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0px 8px 20px rgba(12, 35, 64, 0.12);
+        }
+
+        .btn-primary-cta {
+            background-color: var(--ttn-action-orange);
+            color: #FFFFFF;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            transition: all 200ms ease-in-out;
+            border-radius: 4px;
+        }
+        .btn-primary-cta:hover {
+            background-color: #E04600;
+        }
+
+        .btn-secondary-cta {
+            background-color: var(--ttn-trust-blue);
+            color: #FFFFFF;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            transition: all 200ms ease-in-out;
+            border-radius: 4px;
+        }
+        .btn-secondary-cta:hover {
+            background-color: #004A91;
+        }
+
+        .btn-ghost {
+            background-color: transparent;
+            color: var(--ttn-navy);
+            transition: all 200ms ease-in-out;
+            border-radius: 4px;
+        }
+        .btn-ghost:hover {
+            background-color: var(--ttn-ice-blue);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--ttn-trust-blue) !important;
+            box-shadow: 0 0 0 3px rgba(89, 203, 232, 0.3);
+        }
+
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -67,27 +144,27 @@
         }
     </style>
 </head>
-<body class="bg-nhs-lightbg min-h-screen font-sans text-slate-800 flex flex-col justify-between p-2 md:p-6">
+<body class="bg-ttn-ice/40 min-h-screen font-sans text-ttn-slate flex flex-col justify-between p-2 md:p-6">
 
     <!-- Main Outer Container -->
-    <div class="max-w-5xl mx-auto w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 flex flex-col min-h-[720px]">
+    <div class="max-w-5xl mx-auto w-full bg-white rounded-ttn-soft shadow-ttn overflow-hidden border border-ttn-ice flex flex-col min-h-[720px]">
         
-        <!-- NHS Header Banner -->
-        <header class="bg-nhs-blue text-white px-5 py-3.5 md:px-6 md:py-4 flex items-center justify-between shadow-md">
+        <!-- TTN / NHS Header Banner -->
+        <header class="bg-ttn-navy text-white px-5 py-3.5 md:px-6 md:py-4 flex items-center justify-between shadow-md border-b-2 border-ttn-sky">
             <div class="flex items-center space-x-3">
-                <div class="bg-white text-nhs-blue font-bold text-xl px-3 py-1 rounded tracking-wider shadow-sm">
+                <div class="bg-white text-ttn-navy font-extrabold text-xl px-3 py-1 rounded-ttn-sm tracking-wider shadow-sm font-heading">
                     NHS
                 </div>
                 <div>
-                    <h1 class="text-base md:text-xl font-bold leading-tight">General Practice Conflict Management</h1>
-                    <p class="text-[11px] md:text-xs text-blue-100 flex items-center gap-1.5 mt-0.5">
-                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        AI Voice Expert Assistant (British Accent) • Grounded in Lindsay Dubock TTN Notebook
+                    <h1 class="text-base md:text-xl font-bold font-heading leading-tight tracking-wide text-white">General Practice Conflict Management</h1>
+                    <p class="text-[11px] md:text-xs text-ttn-sky flex items-center gap-1.5 mt-0.5 font-medium">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-ttn-success animate-pulse"></span>
+                        AI Voice Expert Assistant • Grounded in Lindsay Dubock (TTN) Notebook
                     </p>
                 </div>
             </div>
-            <button id="infoBtn" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-all text-xs md:text-sm font-medium flex items-center gap-2" title="View Full Lesson Knowledge Base">
-                <i class="fa-solid fa-book-bookmark text-sm"></i>
+            <button id="infoBtn" class="btn-ghost text-white hover:text-ttn-navy bg-white/10 px-3.5 py-2 text-xs md:text-sm font-heading font-bold flex items-center gap-2" title="View Full Lesson Knowledge Base">
+                <i class="fa-solid fa-book-bookmark text-sm text-ttn-sky"></i>
                 <span class="hidden sm:inline">Notebook Context</span>
             </button>
         </header>
@@ -96,149 +173,150 @@
         <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0">
             
             <!-- Left Sidebar / Persona Controls -->
-            <div class="lg:col-span-4 bg-slate-50 p-4 md:p-5 border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col justify-between space-y-4">
+            <div class="lg:col-span-4 bg-slate-50/80 p-4 md:p-5 border-b lg:border-b-0 lg:border-r border-ttn-ice flex flex-col justify-between space-y-4">
                 <div>
-                    <div class="flex items-center space-x-2 text-nhs-darkblue font-semibold text-xs md:text-sm mb-3">
-                        <i class="fa-solid fa-user-doctor text-nhs-blue"></i>
+                    <div class="flex items-center space-x-2 text-ttn-navy font-heading font-bold text-xs md:text-sm mb-3.5 uppercase tracking-wider">
+                        <i class="fa-solid fa-user-doctor text-ttn-blue"></i>
                         <span>Select AI Voice Trainer Persona</span>
                     </div>
 
                     <!-- Voice Persona Selector Cards -->
-                    <div class="space-y-2.5" id="personaContainer">
-                        <div data-persona="lindsay" class="persona-card active bg-white p-3 rounded-xl border-2 border-nhs-brightblue shadow-sm cursor-pointer hover:border-nhs-brightblue transition-all flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-full bg-blue-100 text-nhs-blue flex items-center justify-center font-bold text-sm shrink-0">
+                    <div class="space-y-3" id="personaContainer">
+                        <div data-persona="lindsay" class="persona-card active bg-white p-3.5 rounded-ttn-soft border-2 border-ttn-blue shadow-ttn cursor-pointer flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 text-ttn-blue flex items-center justify-center font-bold text-sm shrink-0 font-heading">
                                 LD
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h4 class="font-semibold text-slate-900 text-xs md:text-sm truncate">Lindsay Dubock</h4>
+                                <h4 class="font-bold font-heading text-ttn-navy text-xs md:text-sm truncate">Lindsay Dubock</h4>
                                 <p class="text-[11px] text-slate-500 truncate">Director, The Training Network</p>
-                                <span class="inline-block text-[10px] bg-blue-50 text-nhs-blue font-medium px-2 py-0.5 rounded mt-0.5">
-                                    <i class="fa-solid fa-language mr-1"></i>Voice: Kore (British, Direct & Empathetic)
+                                <span class="inline-block text-[10px] bg-ttn-ice text-ttn-blue font-bold px-2 py-0.5 rounded-full mt-1">
+                                    <i class="fa-solid fa-language mr-1 text-ttn-sky"></i>Voice: Kore (Direct & Empathetic)
                                 </span>
                             </div>
                         </div>
 
-                        <div data-persona="sarah" class="persona-card bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-nhs-brightblue transition-all flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0">
+                        <div data-persona="sarah" class="persona-card bg-white p-3.5 rounded-ttn-soft border border-ttn-ice cursor-pointer flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-emerald-100 text-ttn-success flex items-center justify-center font-bold text-sm shrink-0 font-heading">
                                 SM
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h4 class="font-semibold text-slate-900 text-xs md:text-sm truncate">Dr. Sarah Mitchell</h4>
+                                <h4 class="font-bold font-heading text-ttn-navy text-xs md:text-sm truncate">Dr. Sarah Mitchell</h4>
                                 <p class="text-[11px] text-slate-500 truncate">Senior De-escalation Lead</p>
-                                <span class="inline-block text-[10px] bg-emerald-50 text-emerald-700 font-medium px-2 py-0.5 rounded mt-0.5">
-                                    <i class="fa-solid fa-language mr-1"></i>Voice: Aoede (British, Calm & Reassuring)
+                                <span class="inline-block text-[10px] bg-emerald-50 text-ttn-success font-bold px-2 py-0.5 rounded-full mt-1">
+                                    <i class="fa-solid fa-language mr-1 text-emerald-500"></i>Voice: Aoede (Calm & Reassuring)
                                 </span>
                             </div>
                         </div>
 
-                        <div data-persona="mark" class="persona-card bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-nhs-brightblue transition-all flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm shrink-0">
+                        <div data-persona="mark" class="persona-card bg-white p-3.5 rounded-ttn-soft border border-ttn-ice cursor-pointer flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm shrink-0 font-heading">
                                 MD
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h4 class="font-semibold text-slate-900 text-xs md:text-sm truncate">Mark Davies</h4>
+                                <h4 class="font-bold font-heading text-ttn-navy text-xs md:text-sm truncate">Mark Davies</h4>
                                 <p class="text-[11px] text-slate-500 truncate">Practice Manager & Lead</p>
-                                <span class="inline-block text-[10px] bg-amber-50 text-amber-800 font-medium px-2 py-0.5 rounded mt-0.5">
-                                    <i class="fa-solid fa-language mr-1"></i>Voice: Puck (British, Practical & Structured)
+                                <span class="inline-block text-[10px] bg-amber-50 text-amber-800 font-bold px-2 py-0.5 rounded-full mt-1">
+                                    <i class="fa-solid fa-language mr-1 text-amber-600"></i>Voice: Puck (Practical & Structured)
                                 </span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Recommended Quick Prompt Topics -->
-                    <div class="mt-5">
-                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Practice Scenarios (Click to Ask)</p>
+                    <div class="mt-6">
+                        <p class="text-[11px] font-extrabold font-heading text-ttn-navy/60 uppercase tracking-wider mb-2.5">Practice Scenarios (Click to Ask)</p>
                         <div class="space-y-2 text-xs">
-                            <button class="quick-question-btn w-full text-left bg-white hover:bg-slate-100 p-2.5 rounded-lg border border-slate-200 text-slate-700 transition-all flex items-start gap-2 shadow-xs">
-                                <i class="fa-solid fa-magnifying-glass text-nhs-blue mt-0.5 shrink-0"></i>
-                                <span>How do I move from being a 'Judge' to a 'Detective' using Miller's Law?</span>
+                            <button class="quick-question-btn w-full text-left bg-white hover:bg-ttn-ice/50 p-2.5 rounded-ttn-sm border border-ttn-ice text-ttn-slate transition-all flex items-start gap-2 shadow-xs group">
+                                <i class="fa-solid fa-magnifying-glass text-ttn-blue group-hover:text-ttn-orange mt-0.5 shrink-0 transition-colors"></i>
+                                <span class="group-hover:text-ttn-navy font-medium">How do I move from being a 'Judge' to a 'Detective' using Miller's Law?</span>
                             </button>
-                            <button class="quick-question-btn w-full text-left bg-white hover:bg-slate-100 p-2.5 rounded-lg border border-slate-200 text-slate-700 transition-all flex items-start gap-2 shadow-xs">
-                                <i class="fa-solid fa-stairs text-nhs-blue mt-0.5 shrink-0"></i>
-                                <span>What is the 3-part Boundary Formula and 5 Rung Ladder?</span>
+                            <button class="quick-question-btn w-full text-left bg-white hover:bg-ttn-ice/50 p-2.5 rounded-ttn-sm border border-ttn-ice text-ttn-slate transition-all flex items-start gap-2 shadow-xs group">
+                                <i class="fa-solid fa-stairs text-ttn-blue group-hover:text-ttn-orange mt-0.5 shrink-0 transition-colors"></i>
+                                <span class="group-hover:text-ttn-navy font-medium">What is the 3-part Boundary Formula and 5 Rung Ladder?</span>
                             </button>
-                            <button class="quick-question-btn w-full text-left bg-white hover:bg-slate-100 p-2.5 rounded-lg border border-slate-200 text-slate-700 transition-all flex items-start gap-2 shadow-xs">
-                                <i class="fa-solid fa-shield-halved text-nhs-blue mt-0.5 shrink-0"></i>
-                                <span>What does 'Not Taking the Bait' mean when a patient attacks staff?</span>
+                            <button class="quick-question-btn w-full text-left bg-white hover:bg-ttn-ice/50 p-2.5 rounded-ttn-sm border border-ttn-ice text-ttn-slate transition-all flex items-start gap-2 shadow-xs group">
+                                <i class="fa-solid fa-shield-halved text-ttn-blue group-hover:text-ttn-orange mt-0.5 shrink-0 transition-colors"></i>
+                                <span class="group-hover:text-ttn-navy font-medium">What does 'Not Taking the Bait' mean when a patient attacks staff?</span>
                             </button>
-                            <button class="quick-question-btn w-full text-left bg-white hover:bg-slate-100 p-2.5 rounded-lg border border-slate-200 text-slate-700 transition-all flex items-start gap-2 shadow-xs">
-                                <i class="fa-solid fa-users text-nhs-blue mt-0.5 shrink-0"></i>
-                                <span>How do I handle staff-splitting or third-party callers?</span>
+                            <button class="quick-question-btn w-full text-left bg-white hover:bg-slate-100 p-2.5 rounded-ttn-sm border border-ttn-ice text-ttn-slate transition-all flex items-start gap-2 shadow-xs group">
+                                <i class="fa-solid fa-users text-ttn-blue group-hover:text-ttn-orange mt-0.5 shrink-0 transition-colors"></i>
+                                <span class="group-hover:text-ttn-navy font-medium">How do I handle staff-splitting or third-party callers?</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Knowledge Base Indicator -->
-                <div class="bg-blue-50/90 p-3 rounded-xl border border-blue-100 text-xs text-slate-600">
-                    <div class="flex items-center gap-2 font-semibold text-nhs-blue mb-1">
-                        <i class="fa-solid fa-circle-check"></i>
+                <div class="bg-blue-50/80 p-3 rounded-ttn-soft border border-blue-100 text-xs text-ttn-slate">
+                    <div class="flex items-center gap-2 font-bold font-heading text-ttn-blue mb-1">
+                        <i class="fa-solid fa-circle-check text-ttn-success text-sm"></i>
                         <span>100% Grounded Knowledge</span>
                     </div>
-                    Answers are strictly based on the 54-slide General Practice Conflict Management Notebook by Lindsay Dubock.
+                    Answers strictly based on the 54-slide GP Conflict Management Notebook by Lindsay Dubock.
                 </div>
             </div>
 
             <!-- Right Area / Dialogue Stream & Microphone Interaction -->
             <div class="lg:col-span-8 flex flex-col justify-between p-4 md:p-6 bg-white">
                 
-                <!-- Chat & Speech History View -->
+                <!-- Chat Stream View -->
                 <div id="chatHistory" class="flex-1 overflow-y-auto space-y-4 pr-1 md:pr-2 mb-4 max-h-[440px] min-h-[320px]">
                     <!-- Initial Welcome Message from AI Expert -->
                     <div class="flex gap-3">
-                        <div id="aiAvatarHeader" class="w-8 h-8 rounded-full bg-nhs-blue text-white flex items-center justify-center shrink-0 text-xs font-bold">
+                        <div id="aiAvatarHeader" class="w-8 h-8 rounded-full bg-ttn-navy text-white flex items-center justify-center shrink-0 text-xs font-bold font-heading">
                             LD
                         </div>
-                        <div class="bg-slate-100 p-3.5 md:p-4 rounded-2xl rounded-tl-none text-xs md:text-sm text-slate-800 max-w-[90%] leading-relaxed shadow-xs">
-                            <p id="aiHeaderName" class="font-bold text-nhs-blue text-xs mb-1">Lindsay Dubock • Lead Conflict Trainer</p>
+                        <div class="bg-slate-100/80 border border-ttn-ice p-3.5 md:p-4 rounded-ttn-soft rounded-tl-none text-xs md:text-sm text-ttn-slate max-w-[90%] leading-relaxed shadow-xs">
+                            <p id="aiHeaderName" class="font-bold font-heading text-ttn-blue text-xs mb-1">Lindsay Dubock • Lead Conflict Trainer</p>
                             Welcome! I am your British AI Expert for <strong>Conflict Management in General Practice</strong>. 
                             <br/><br/>
                             Ask me anything about Miller's Law (Judge vs. Detective), MDE Behaviours (Manipulation, Demanding, Entitlement), the 5-Rung Boundaries Ladder, the 4-Part Contact Structure, or Micro-Resilience.
                             <br/><br/>
-                            <span class="text-nhs-darkblue font-medium"><i class="fa-solid fa-microphone text-nhs-brightblue mr-1"></i> Tap the microphone button below to speak your question</span>, or type it in the text box.
+                            <span class="text-ttn-navy font-semibold"><i class="fa-solid fa-microphone text-ttn-orange mr-1"></i> Tap the microphone button below to speak your question</span>, or type it in the text box.
                         </div>
                     </div>
                 </div>
 
                 <!-- Live Voice Interaction Area -->
-                <div class="border-t border-slate-100 pt-4 flex flex-col items-center">
+                <div class="border-t border-ttn-ice pt-4 flex flex-col items-center">
                     
-                    <!-- Audio Wave Visualizer (Active during recording or AI playback) -->
+                    <!-- Audio Wave Visualizer -->
                     <div id="audioVisualizer" class="hidden flex items-center justify-center gap-1.5 h-10 mb-2">
-                        <span class="w-1.5 bg-nhs-brightblue rounded-full wave-bar"></span>
-                        <span class="w-1.5 bg-nhs-brightblue rounded-full wave-bar"></span>
-                        <span class="w-1.5 bg-nhs-brightblue rounded-full wave-bar"></span>
-                        <span class="w-1.5 bg-nhs-brightblue rounded-full wave-bar"></span>
-                        <span class="w-1.5 bg-nhs-brightblue rounded-full wave-bar"></span>
-                        <span id="visualizerStatus" class="ml-3 text-xs font-medium text-nhs-blue">Listening to your voice...</span>
+                        <span class="w-1.5 bg-ttn-sky rounded-full wave-bar"></span>
+                        <span class="w-1.5 bg-ttn-blue rounded-full wave-bar"></span>
+                        <span class="w-1.5 bg-ttn-sky rounded-full wave-bar"></span>
+                        <span class="w-1.5 bg-ttn-success rounded-full wave-bar"></span>
+                        <span class="w-1.5 bg-ttn-sky rounded-full wave-bar"></span>
+                        <span id="visualizerStatus" class="ml-3 text-xs font-bold font-heading text-ttn-navy">Listening to your voice...</span>
                     </div>
 
                     <!-- Microphone & Input Controls Bar -->
-                    <div class="w-full flex items-center gap-2">
+                    <div class="w-full flex items-center gap-2.5">
                         <!-- Microphone Main Action Button -->
                         <div class="relative flex-shrink-0">
-                            <div id="micPulseRing" class="hidden absolute -inset-2 bg-nhs-brightblue/30 rounded-full animate-pulse-ring"></div>
-                            <button id="micBtn" class="relative bg-nhs-blue hover:bg-nhs-darkblue text-white w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg transition-all focus:outline-none focus:ring-4 focus:ring-blue-200" title="Click to Speak">
+                            <div id="micPulseRing" class="hidden absolute -inset-2 bg-ttn-orange/30 rounded-full animate-pulse-ring"></div>
+                            <button id="micBtn" class="relative btn-primary-cta w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-ttn transition-all focus:outline-none" title="Click to Speak">
                                 <i id="micIcon" class="fa-solid fa-microphone text-lg md:text-xl"></i>
                             </button>
                         </div>
 
                         <!-- Text Fallback Input Container -->
-                        <div class="flex-1 flex items-center bg-slate-100 rounded-full px-4 py-2 border border-slate-200 focus-within:border-nhs-brightblue focus-within:bg-white transition-all">
-                            <input id="textInput" type="text" placeholder="Or type your question here..." class="w-full bg-transparent border-none text-xs md:text-sm focus:outline-none text-slate-800 placeholder-slate-400">
-                            <button id="sendBtn" class="text-nhs-blue hover:text-nhs-darkblue p-2 font-medium text-sm transition-all" title="Send Message">
-                                <i class="fa-solid fa-paper-plane text-sm md:text-base"></i>
+                        <div class="flex-1 flex items-center bg-white rounded-ttn-sm px-4 py-2 border border-ttn-slate/40 focus-within:border-ttn-blue transition-all">
+                            <input id="textInput" type="text" placeholder="Or type your question here..." class="w-full bg-transparent border-none text-xs md:text-sm focus:outline-none text-ttn-slate placeholder-slate-400">
+                            <button id="sendBtn" class="btn-secondary-cta px-3 py-1.5 text-xs font-heading font-bold transition-all flex items-center gap-1.5 ml-2 shrink-0" title="Send Message">
+                                <span>Send</span>
+                                <i class="fa-solid fa-paper-plane text-xs"></i>
                             </button>
                         </div>
                     </div>
 
                     <!-- Voice Mode Toggle & Status -->
-                    <div class="w-full flex justify-between items-center mt-3 text-[11px] text-slate-500 px-2">
-                        <span id="statusIndicator" class="flex items-center gap-1.5 font-medium">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Ready to listen (en-GB)
+                    <div class="w-full flex justify-between items-center mt-3 text-[11px] text-slate-500 px-2 font-medium">
+                        <span id="statusIndicator" class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-ttn-success"></span> Ready to listen (en-GB)
                         </span>
                         <label class="flex items-center gap-1.5 cursor-pointer select-none">
-                            <input type="checkbox" id="autoPlaySpeech" checked class="rounded text-nhs-blue focus:ring-nhs-blue h-3.5 w-3.5">
+                            <input type="checkbox" id="autoPlaySpeech" checked class="rounded text-ttn-blue focus:ring-ttn-sky h-3.5 w-3.5">
                             <span>Auto-speak British AI voice response</span>
                         </label>
                     </div>
@@ -249,28 +327,28 @@
         </div>
 
         <!-- Comprehensive Notebook Knowledge Base Modal -->
-        <div id="kbModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
-                <div class="bg-nhs-blue text-white p-4 flex justify-between items-center">
+        <div id="kbModal" class="fixed inset-0 bg-ttn-navy/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-ttn-soft max-w-3xl w-full max-h-[88vh] flex flex-col shadow-ttn-hover overflow-hidden border border-ttn-ice">
+                <div class="bg-ttn-navy text-white p-4 flex justify-between items-center border-b-2 border-ttn-sky">
                     <div>
-                        <h3 class="font-bold text-base flex items-center gap-2">
-                            <i class="fa-solid fa-book-open"></i> Full Lesson Knowledge Base Context
+                        <h3 class="font-extrabold font-heading text-base flex items-center gap-2">
+                            <i class="fa-solid fa-book-open text-ttn-sky"></i> Full Lesson Knowledge Base Context
                         </h3>
-                        <p class="text-xs text-blue-100">Lindsay Dubock • Conflict Management in General Practice (The Training Network)</p>
+                        <p class="text-xs text-ttn-ice">Lindsay Dubock • Conflict Management in General Practice (The Training Network)</p>
                     </div>
-                    <button id="closeKbBtn" class="text-white hover:bg-white/20 p-1.5 rounded-lg transition-all">
+                    <button id="closeKbBtn" class="text-white hover:bg-white/20 p-1.5 rounded-ttn-sm transition-all">
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
                 </div>
-                <div class="p-5 overflow-y-auto space-y-4 text-xs md:text-sm text-slate-700 leading-relaxed">
+                <div class="p-5 overflow-y-auto space-y-4 text-xs md:text-sm text-ttn-slate leading-relaxed">
                     
-                    <div class="border-b pb-3">
-                        <h4 class="font-bold text-nhs-darkblue text-sm">90% of Conflict is Predictable</h4>
+                    <div class="border-b border-ttn-ice pb-3">
+                        <h4 class="font-bold font-heading text-ttn-navy text-sm">90% of Conflict is Predictable</h4>
                         <p class="text-slate-600 mt-1">If conflict follows recognizable patterns, it can be prepared for. Training shifts staff from feeling like victims of conflict to skilled managers of it.</p>
                     </div>
 
-                    <div class="border-b pb-3">
-                        <h4 class="font-bold text-nhs-darkblue text-sm">Module 1: Hidden Drivers & Locus of Control</h4>
+                    <div class="border-b border-ttn-ice pb-3">
+                        <h4 class="font-bold font-heading text-ttn-navy text-sm">Module 1: Hidden Drivers & Locus of Control</h4>
                         <ul class="list-disc pl-5 mt-1 space-y-1">
                             <li><strong>In My Control (Accountable):</strong> My boundaries, thoughts, actions, responses, self-talk. (Stick like Velcro).</li>
                             <li><strong>Out of My Control (Let Go):</strong> Others' choices, opinions, patient's anger, past/future. (Run off like Teflon — Monk carrying woman story).</li>
@@ -278,8 +356,8 @@
                         </ul>
                     </div>
 
-                    <div class="border-b pb-3">
-                        <h4 class="font-bold text-nhs-darkblue text-sm">Module 2: De-escalation, Fight-or-Flight & Miller's Law</h4>
+                    <div class="border-b border-ttn-ice pb-3">
+                        <h4 class="font-bold font-heading text-ttn-navy text-sm">Module 2: De-escalation, Fight-or-Flight & Miller's Law</h4>
                         <ul class="list-disc pl-5 mt-1 space-y-1">
                             <li><strong>Fight-or-Flight Neuroscience:</strong> Dysregulated nervous systems mirror each other. Healthcare staff must regulate first (calm, low, slow voice).</li>
                             <li><strong>3 Layers of Communication:</strong> 55% Body Language (45-degree stance, palms open, 2 arms' length), 38% Paraverbal (pitch, tone, pace), 7% Words.</li>
@@ -292,10 +370,10 @@
                         </ul>
                     </div>
 
-                    <div class="border-b pb-3">
-                        <h4 class="font-bold text-nhs-darkblue text-sm">Module 3: MDE Behaviours (Manipulation, Demanding, Entitlement)</h4>
+                    <div class="border-b border-ttn-ice pb-3">
+                        <h4 class="font-bold font-heading text-ttn-navy text-sm">Module 3: MDE Behaviours (Manipulation, Demanding, Entitlement)</h4>
                         <ul class="list-disc pl-5 mt-1 space-y-1">
-                            <li><strong>Core Driver:</strong> Re-asserting control when feeling vulnerable or powerless.</li>
+                            <li><strong>Core Driver:</strong> Regaining control when feeling vulnerable or powerless.</li>
                             <li><strong>Manipulation:</strong> Indirect control (flattery, guilt, splitting staff, feigning vulnerability). <em>Response: Stay warm but consistent. "Our team follows the same policy for every patient."</em></li>
                             <li><strong>Demanding:</strong> Direct control (urgency, insistence). <em>Response: Acknowledge emotion, offer 2 clear choices within policy.</em></li>
                             <li><strong>Entitlement:</strong> Assumed control (superiority statements, name-dropping, exemption requests). <em>Response: Frame fairness as the reason ("Our process is the same for every patient so everyone gets a fair standard of care").</em></li>
@@ -303,22 +381,22 @@
                         </ul>
                     </div>
 
-                    <div class="border-b pb-3">
-                        <h4 class="font-bold text-nhs-darkblue text-sm">Module 4: The Boundaries Ladder</h4>
+                    <div class="border-b border-ttn-ice pb-3">
+                        <h4 class="font-bold font-heading text-ttn-navy text-sm">Module 4: The Boundaries Ladder</h4>
                         <ul class="list-disc pl-5 mt-1 space-y-1">
                             <li><strong>Boundary Definition:</strong> A condition ("I will continue to help you if..."), not a threat or refusal.</li>
                             <li><strong>Boundary Formula:</strong> <code>1 Clear Limit + 1 Rationale + 1 Option</code><br/>
-                            <em>Example: "I am not able to offer a same-day slot today (limit) because those are reserved for acute emergencies (rationale). What I can offer is a callback from the duty pharmacist or routine slot tomorrow (option)."</em></li>
+                            <em>Example: "I am not able to offer a same-day slot today (limit) because acute capacity is reserved for medical emergencies (rationale). What I can offer is a callback from the duty pharmacist or routine slot tomorrow (option)."</em></li>
                             <li><strong>5 Rungs:</strong> Rung 1 Clarify -> Rung 2 Contain -> Rung 3 Reaffirm -> Rung 4 Consequence ("If shouting continues, I will end this call") -> Rung 5 Conclude/Escalate. Start low, climb slowly, step back down when calm. Never re-argue a stated boundary.</li>
                         </ul>
                     </div>
 
-                    <div class="border-b pb-3">
-                        <h4 class="font-bold text-nhs-darkblue text-sm">Module 5: Managing Contacts Under Pressure</h4>
+                    <div class="border-b border-ttn-ice pb-3">
+                        <h4 class="font-bold font-heading text-ttn-navy text-sm">Module 5: Managing Contacts Under Pressure</h4>
                         <ul class="list-disc pl-5 mt-1 space-y-1">
                             <li><strong>4-Part Contact Structure:</strong> Open (role + purpose) -> Gather (1 focused question) -> Check (confirm key facts) -> Close (explicit plan by who/when + check understanding).</li>
                             <li><strong>Pace Control & Skilled Redirect:</strong> Validate, name what you heard, move forward. ("Can I just pause you there — what is worrying you most right now?")</li>
-                            <li><strong>Not Taking the Bait:</strong> Respond to the presupposition/need, not the attack/accusation. (Child metaphor: ignore unhelpful behavior, address the need beneath).</li>
+                            <li><strong>Not Taking the Bait:</strong> Respond to the presupposition/need, not the attack/accusation. (Child metaphor: reward the good, don't feed the bad).</li>
                             <li><strong>Third-Party Callers:</strong> Keep patient at the center. Validate concern without breaching confidentiality or granting unvetted demands.</li>
                             <li><strong>Clean Close:</strong> Confirm understanding aloud, state specific names/times (never "someone will be in touch"), safety net.</li>
                             <li><strong>Defensible Documentation:</strong> Record objective facts, exact statements, and boundaries set — avoid emotional labels ("patient was rude").</li>
@@ -326,7 +404,7 @@
                     </div>
 
                     <div>
-                        <h4 class="font-bold text-nhs-darkblue text-sm">Module 6: Resilience & Resetting</h4>
+                        <h4 class="font-bold font-heading text-ttn-navy text-sm">Module 6: Resilience & Resetting</h4>
                         <ul class="list-disc pl-5 mt-1 space-y-1">
                             <li><strong>Resilience Definition:</strong> The ability to reset — not to endure abuse or cope alone.</li>
                             <li><strong>Micro-Resilience Tools:</strong> Box Breathing (4-4-4-4 rhythm), Sensory Grounding, Silent Self-Talk ("This frustration is not about me. I am here to help, not to absorb their feelings").</li>
@@ -339,28 +417,29 @@
         </div>
 
         <!-- Onboarding / Setup Screen -->
-        <div id="onboardingModal" class="fixed inset-0 z-[100] bg-slate-900/90 flex items-center justify-center p-4 transition-opacity duration-500">
-            <div class="max-w-3xl w-full bg-[#263040] rounded-xl shadow-2xl p-8 md:p-10 flex flex-col items-center border border-[#3e4c5e]">
-                <h2 class="text-2xl md:text-3xl font-bold text-[#60a5fa] mb-3 text-center">Before We Begin: Audio Setup</h2>
-                <p class="text-slate-300 mb-8 text-center max-w-xl">This interactive simulation requires microphone access so you can speak directly to the AI Expert.</p>
+        <div id="onboardingModal" class="fixed inset-0 z-[100] bg-ttn-navy/90 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-500">
+            <div class="max-w-2xl w-full bg-white rounded-ttn-soft shadow-ttn-hover p-6 md:p-8 flex flex-col items-center border border-ttn-ice">
+                <div class="bg-ttn-ice text-ttn-navy font-bold text-xs uppercase px-3 py-1 rounded-full font-heading mb-2">
+                    Interactive Audio Setup
+                </div>
+                <h2 class="text-xl md:text-2xl font-extrabold font-heading text-ttn-navy mb-2 text-center">NHS Conflict Management Trainer</h2>
+                <p class="text-ttn-slate text-xs md:text-sm mb-6 text-center max-w-lg">This interactive simulation requires microphone access so you can speak directly to the AI Expert.</p>
                 
-                <div class="w-full bg-[#313d50] border border-[#3e4c5e] rounded-lg p-6 md:p-8 text-left mb-8 shadow-inner">
-                    <!-- API Key Section -->
-                    <div class="mb-6 pb-6 border-b border-[#475569]">
-                        <label class="block text-sm font-bold text-white mb-2">Gemini API Key:</label>
-                        <input type="password" id="apiKeyInput" placeholder="Enter key (e.g. AQ.Ab8RN... or AIza...)" class="w-full bg-[#1e2532] border border-[#475569] rounded-md px-4 py-3 text-slate-200 focus:outline-none focus:border-[#60a5fa] transition-colors">
-                        <p class="text-[12px] text-slate-400 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> <strong>Note:</strong> Leave empty in preview mode. Enter your API Key if deployed on GitHub Pages.</p>
+                <div class="w-full bg-slate-50 border border-ttn-ice rounded-ttn-soft p-5 text-left mb-6">
+                    <div class="mb-5 pb-5 border-b border-ttn-ice">
+                        <label class="block text-xs font-bold font-heading text-ttn-navy mb-1.5 uppercase">Gemini API Key (Optional):</label>
+                        <input type="password" id="apiKeyInput" placeholder="Enter key (e.g. AQ.Ab8RN... or AIza...)" class="w-full bg-white border border-ttn-slate/40 rounded-ttn-sm px-3.5 py-2.5 text-xs text-ttn-slate focus:outline-none transition-colors">
+                        <p class="text-[11px] text-slate-500 mt-1.5"><i class="fa-solid fa-circle-info mr-1 text-ttn-blue"></i> Leave empty in preview mode. Enter key if hosting externally on GitHub Pages.</p>
                     </div>
 
-                    <!-- Microphone Steps Section -->
-                    <div class="space-y-4 text-slate-200 text-sm md:text-base leading-relaxed">
-                        <p><strong class="text-white font-semibold">Step 1:</strong> Click the button below.</p>
-                        <p><strong class="text-white font-semibold">Step 2:</strong> Your browser will display a popup near the top of the screen.</p>
-                        <p><strong class="text-white font-semibold">Step 3:</strong> Click "Allow" to grant microphone access.</p>
+                    <div class="space-y-2.5 text-ttn-slate text-xs leading-relaxed font-medium">
+                        <p><strong class="text-ttn-navy font-bold font-heading">Step 1:</strong> Click the button below.</p>
+                        <p><strong class="text-ttn-navy font-bold font-heading">Step 2:</strong> Your browser will display a popup requesting microphone access.</p>
+                        <p><strong class="text-ttn-navy font-bold font-heading">Step 3:</strong> Click "Allow" to enable voice interaction.</p>
                     </div>
                 </div>
 
-                <button id="startAppBtn" class="bg-[#3b82f6] hover:bg-[#2563eb] text-white font-medium py-2.5 px-8 rounded-md transition-colors text-base shadow-md flex items-center justify-center">
+                <button id="startAppBtn" class="btn-primary-cta px-8 py-3 text-sm font-heading font-extrabold tracking-wide uppercase shadow-ttn flex items-center justify-center">
                     Test Microphone & Continue
                 </button>
             </div>
@@ -369,7 +448,6 @@
     </div>
 
     <script>
-        // Full Grounded NHS Conflict Management Knowledge Base (Lindsay Dubock / TTN Notebook)
         const NHS_LESSON_KNOWLEDGE_BASE = `
         You are an official NHS Practice Conflict Management AI Master Trainer providing real-time expert advice to NHS GP practice staff (receptionists, care coordinators, practice managers, nurses, doctors).
         Your knowledge is 100% grounded in the "Conflict Management in General Practice" training deck and commentary presented by Lindsay Dubock, Director of The Training Network (TTN).
@@ -410,16 +488,16 @@
         - The 5 Rungs of the Ladder: Rung 1 Clarify -> Rung 2 Contain -> Rung 3 Reaffirm -> Rung 4 Consequence ("If shouting continues, I will end this call") -> Rung 5 Conclude/Escalate. Start low, climb slowly, step back down when patient calms. NEVER re-argue a stated boundary.
 
         MODULE 5: MANAGING CONTACTS UNDER PRESSURE
-        - 4-Part Contact Structure: Open (role + purpose) -> Gather (1 focused question) -> Check (confirm key facts) -> Close (explicit plan by who/when + check understanding).
+        - 4-Part Contact Structure: Open (role + purpose) -> Gather (1 focused question) -> Check (confirm details) -> Close (explicit plan + check understanding).
         - Pace Control & Skilled Redirect: Validate, name what you heard, move forward. ("Can I just pause you there — what is worrying you most right now?")
-        - Not Taking the Bait: Respond to the presupposition/need, not the attack/accusation. (Child metaphor: ignore unhelpful behavior, address the need beneath).
+        - Not Taking the Bait: Respond to the presupposition (the underlying need), NOT the attack/accusation. (Child metaphor: ignore unhelpful behavior, address the need beneath).
         - Third-Party Callers: Keep patient at center ("I need to speak with the patient directly"). Validate concern without breaching confidentiality.
         - Clean Close: Confirm understanding aloud, explicit plan (specific name, action, time — NEVER "someone will be in touch"), safety net.
-        - Defensible Documentation: Record objective facts, exact statements, and boundaries set — avoid emotional labels ("patient was rude").
+        - Defensible & Neutral Documentation: Record factual statements, exact words, and boundaries set — avoid emotional labels ("patient was aggressive").
 
         MODULE 6: RESILIENCE & WELLBEING
         - Resilience = The ability to RESET, not the ability to endure abuse or cope alone.
-        - Micro-Resilience Tools: Box Breathing (4-4-4-4 rhythm), Sensory Grounding, Silent Self-Talk ("This frustration is not about me. I am here to help, not to absorb their feelings").
+        - Micro-Resilience Tools: Box Breathing (4-4-4-4 rhythm), Sensory Grounding, Silent Self-Talk Reset ("This frustration is not about me. I am here to help, not to absorb their feelings").
         - Counteract Negativity Bias: Share compliments, debrief objectively, shift language from "that was challenging, but we handled it."
 
         RESPONSE FORMAT GUIDELINES:
@@ -429,7 +507,6 @@
         - Maintain an empathetic, composed, and highly professional NHS expert tone.
         `;
 
-        // Active State
         let activePersona = {
             id: 'lindsay',
             name: 'Lindsay Dubock',
@@ -438,11 +515,8 @@
         };
         let isRecording = false;
         let speechRecognition = null;
-
-        // Default to empty string for preview environment runtime authentication
         let API_KEY = ""; 
 
-        // DOM Element Selectors
         const micBtn = document.getElementById('micBtn');
         const micIcon = document.getElementById('micIcon');
         const micPulseRing = document.getElementById('micPulseRing');
@@ -459,7 +533,6 @@
         const aiAvatarHeader = document.getElementById('aiAvatarHeader');
         const aiHeaderName = document.getElementById('aiHeaderName');
 
-        // Onboarding Element Selectors
         const onboardingModal = document.getElementById('onboardingModal');
         const apiKeyInput = document.getElementById('apiKeyInput');
         const startAppBtn = document.getElementById('startAppBtn');
@@ -489,7 +562,7 @@
                 speechRecognition.onerror = (event) => {
                     console.warn("Speech recognition error:", event.error);
                     stopRecording();
-                    statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> Speech input issue: ${event.error}`;
+                    statusIndicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Speech input issue: ${event.error}`;
                 };
 
                 speechRecognition.onend = () => {
@@ -498,8 +571,6 @@
                         handleUserSubmit(textInput.value.trim());
                     }
                 };
-            } else {
-                console.warn("Web Speech API not supported in this browser embed. Text input is ready.");
             }
         }
 
@@ -529,31 +600,29 @@
 
         function updateMicUI(recording) {
             if (recording) {
-                micBtn.classList.remove('bg-nhs-blue', 'hover:bg-nhs-darkblue');
-                micBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                micBtn.style.backgroundColor = '#D81E05';
                 micIcon.classList.remove('fa-microphone');
                 micIcon.classList.add('fa-square');
                 micPulseRing.classList.remove('hidden');
                 audioVisualizer.classList.remove('hidden');
-                statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Listening to speech (en-GB)...`;
+                statusIndicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span> Listening to speech (en-GB)...`;
             } else {
-                micBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-                micBtn.classList.add('bg-nhs-blue', 'hover:bg-nhs-darkblue');
+                micBtn.style.backgroundColor = 'var(--ttn-action-orange)';
                 micIcon.classList.remove('fa-square');
                 micIcon.classList.add('fa-microphone');
                 micPulseRing.classList.add('hidden');
                 audioVisualizer.classList.add('hidden');
-                statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Ready to listen (en-GB)`;
+                statusIndicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-ttn-success"></span> Ready to listen (en-GB)`;
             }
         }
 
         document.querySelectorAll('.persona-card').forEach(card => {
             card.addEventListener('click', () => {
                 document.querySelectorAll('.persona-card').forEach(c => {
-                    c.classList.remove('active', 'border-2', 'border-nhs-brightblue');
-                    c.classList.add('border', 'border-slate-200');
+                    c.classList.remove('active', 'border-2', 'border-ttn-blue', 'shadow-ttn');
+                    c.classList.add('border', 'border-ttn-ice');
                 });
-                card.classList.add('active', 'border-2', 'border-nhs-brightblue');
+                card.classList.add('active', 'border-2', 'border-ttn-blue', 'shadow-ttn');
                 
                 const personaKey = card.getAttribute('data-persona');
                 if (personaKey === 'lindsay') {
@@ -578,7 +647,6 @@
             });
         });
 
-        // Mandatory exponential backoff helper: 1s, 2s, 4s, 8s, 16s
         async function fetchWithBackoff(url, options) {
             const delays = [1000, 2000, 4000, 8000, 16000];
             let lastErr = null;
@@ -592,7 +660,7 @@
                             continue;
                         }
                     }
-                    return response; // Return HTTP error status (400, 403, 404, 429)
+                    return response;
                 } catch (err) {
                     lastErr = err;
                     if (i < delays.length) {
@@ -607,11 +675,9 @@
         async function handleUserSubmit(userQuestion) {
             if (!userQuestion || userQuestion.trim() === '') return;
 
-            // Render User Chat Bubble
             appendChatMessage('user', userQuestion);
             textInput.value = '';
 
-            // Show Typing Indicator
             const loadingBubbleId = appendTypingIndicator();
 
             try {
@@ -630,7 +696,6 @@
                 const cleanKey = API_KEY ? API_KEY.trim() : "";
                 const isCustomKey = cleanKey !== "";
 
-                // Exclusively target Flash models to prevent 0-quota Pro model errors on Free Tier keys
                 const endpointsToTry = isCustomKey ? [
                     'v1beta/models/gemini-2.5-flash',
                     'v1beta/models/gemini-1.5-flash',
@@ -666,21 +731,18 @@
                         if (res.ok) {
                             response = res;
                             data = resData;
-                            break; // Successfully connected!
+                            break;
                         }
 
                         if (res.status === 429) {
                             rateLimitErrorData = resData;
-                            console.warn(`Endpoint ${endpoint} hit rate limit (429). Trying next Flash model...`);
                             continue;
                         }
 
                         if (res.status === 404 || res.status === 400) {
-                            console.warn(`Endpoint ${endpoint} returned status ${res.status}. Trying next model...`);
                             continue;
                         }
 
-                        // Stop on unrecoverable authentication errors
                         if (res.status === 403) {
                             primaryStatus = res.status;
                             primaryErrorData = resData;
@@ -696,7 +758,7 @@
                 if (!response || !response.ok) {
                     if (rateLimitErrorData) {
                         const errorMsg = rateLimitErrorData?.error?.message || "Rate limit or daily quota exceeded.";
-                        appendChatMessage('ai', `API Connection Error (429 Quota Exceeded): ${errorMsg}. Please check your current quota at aistudio.google.com`);
+                        appendChatMessage('ai', `API Connection Error (429 Quota Exceeded): ${errorMsg}`);
                         return;
                     }
 
@@ -708,20 +770,17 @@
                     } else if (primaryStatus === 403 && isCustomKey) {
                         errorMsg = `Forbidden (403): ${errorMsg}. Please check that your API key is valid and active at aistudio.google.com`;
                     } else if (primaryStatus === 404) {
-                        errorMsg = "None of the standard Gemini Flash models are authorized for this API key. Please verify your key and project at aistudio.google.com";
+                        errorMsg = "None of the standard Gemini Flash models are authorized for this API key. Please verify your key at aistudio.google.com";
                     }
 
-                    console.error("Gemini API Error details:", primaryErrorData);
                     appendChatMessage('ai', `API Connection Error (${finalStatus}): ${errorMsg}`);
                     return;
                 }
 
                 const aiReplyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I could not retrieve an answer from the NHS training database.";
 
-                // Append AI Response
                 appendChatMessage('ai', aiReplyText);
 
-                // Auto-Generate Spoken Voice Response
                 if (autoPlaySpeech.checked) {
                     generateAndPlayVoiceResponse(aiReplyText);
                 }
@@ -785,10 +844,9 @@
                     }
                 }
             } catch (err) {
-                console.warn("Gemini TTS API not available for this key/environment, falling back to Web Speech synthesis:", err);
+                console.warn("Gemini TTS API not available, using Web Speech synthesis fallback:", err);
             }
 
-            // Fallback for custom keys & GitHub Pages
             fallbackWebSpeech(textToSpeak);
         }
 
@@ -858,20 +916,20 @@
 
             if (sender === 'user') {
                 msgDiv.innerHTML = `
-                    <div class="bg-nhs-blue text-white p-3.5 rounded-2xl rounded-tr-none text-xs md:text-sm max-w-[85%] leading-relaxed shadow-xs">
+                    <div class="bg-ttn-navy text-white p-3.5 rounded-ttn-soft rounded-tr-none text-xs md:text-sm max-w-[85%] leading-relaxed shadow-xs">
                         ${escapeHtml(text)}
                     </div>
-                    <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center shrink-0 text-xs font-bold">
+                    <div class="w-8 h-8 rounded-full bg-slate-200 text-ttn-navy flex items-center justify-center shrink-0 text-xs font-bold font-heading">
                         You
                     </div>
                 `;
             } else {
                 msgDiv.innerHTML = `
-                    <div class="w-8 h-8 rounded-full bg-nhs-blue text-white flex items-center justify-center shrink-0 text-xs font-bold">
+                    <div class="w-8 h-8 rounded-full bg-ttn-navy text-white flex items-center justify-center shrink-0 text-xs font-bold font-heading">
                         ${activePersona.id === 'lindsay' ? 'LD' : (activePersona.id === 'sarah' ? 'SM' : 'MD')}
                     </div>
-                    <div class="bg-slate-100 p-3.5 rounded-2xl rounded-tl-none text-xs md:text-sm text-slate-800 max-w-[88%] leading-relaxed shadow-xs">
-                        <p class="font-bold text-nhs-blue text-xs mb-1">${activePersona.name} • ${activePersona.title}</p>
+                    <div class="bg-slate-100/90 border border-ttn-ice p-3.5 rounded-ttn-soft rounded-tl-none text-xs md:text-sm text-ttn-slate max-w-[88%] leading-relaxed shadow-xs">
+                        <p class="font-bold font-heading text-ttn-blue text-xs mb-1">${activePersona.name} • ${activePersona.title}</p>
                         ${escapeHtml(text)}
                     </div>
                 `;
@@ -887,12 +945,12 @@
             loadingDiv.id = id;
             loadingDiv.className = 'flex gap-3';
             loadingDiv.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-nhs-blue text-white flex items-center justify-center shrink-0 text-xs font-bold">
+                <div class="w-8 h-8 rounded-full bg-ttn-navy text-white flex items-center justify-center shrink-0 text-xs font-bold font-heading">
                     ${activePersona.id === 'lindsay' ? 'LD' : (activePersona.id === 'sarah' ? 'SM' : 'MD')}
                 </div>
-                <div class="bg-slate-100 p-3.5 rounded-2xl rounded-tl-none text-xs text-slate-500 flex items-center gap-2 shadow-xs">
-                    <i class="fa-solid fa-circle-notch fa-spin text-nhs-blue"></i>
-                    <span>Consulting Conflict Management Notebook Database...</span>
+                <div class="bg-slate-100 p-3.5 rounded-ttn-soft rounded-tl-none text-xs text-slate-500 flex items-center gap-2 shadow-xs border border-ttn-ice">
+                    <i class="fa-solid fa-circle-notch fa-spin text-ttn-blue"></i>
+                    <span class="font-medium">Consulting Conflict Management Notebook Database...</span>
                 </div>
             `;
             chatHistory.appendChild(loadingDiv);
